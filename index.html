@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Günlük Seri & Apple UI v11.0</title>
-    <!-- iOS Tam Ekran (PWA) Desteği -->
+    <title>Math Hero LGS - Odak Sürümü v13.1</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -14,24 +13,34 @@
             --spam-flash: #EF9F27; --key-bg: rgba(26, 26, 46, 0.8); --key-disabled: #08080C;
             --streak-color: #EF9F27; --tennis-color: #DFFF00;
         }
-        /* APPLE DONANIM HIZLANDIRMASI (GPU ACCELERATION) */
-        html, body { height: 100%; min-height: -webkit-fill-available; overscroll-behavior-y: none; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.15s ease-out, box-shadow 0.3s ease-in-out; transform: translate3d(0,0,0); }
+        html, body { 
+            position: fixed; width: 100vw; 
+            height: 100vh; height: 100dvh;
+            overflow: hidden; touch-action: none; 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; 
+        }
+        
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; transition: background-color 0.15s ease-out, box-shadow 0.3s ease-in-out; transform: translate3d(0,0,0); }
         body.flash-correct { background-color: var(--correct-flash); }
         body.flash-wrong { background-color: var(--wrong-flash); }
         body.flash-spam { background-color: var(--spam-flash); }
-        
         body.fever-mode { box-shadow: inset 0 0 40px var(--streak-color); }
+        
         .fever-text { color: var(--streak-color); font-weight: bold; font-size: 14px; animation: pulse 0.5s infinite; text-shadow: 0 0 10px var(--streak-color); margin-left: 5px; }
 
-        .screen { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100%; width: 100vw; padding: 20px; text-align: center; position: relative; }
+        .screen { 
+            display: none; flex-direction: column; justify-content: space-evenly; 
+            align-items: center; width: 100vw; height: 100dvh; 
+            /* Üst boşluk 10px'den 50px'e çıkarıldı (Batarya/Saat için) */
+            padding: max(env(safe-area-inset-top), 50px) 15px max(env(safe-area-inset-bottom), 15px) 15px; 
+            text-align: center; position: relative; 
+        }
         .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
         
-        .title { font-size: 8vw; max-font-size: 42px; font-weight: bold; margin-bottom: 5px; color: var(--timer-normal); z-index: 10; cursor: pointer; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
+        .title { font-size: 7.5vw; max-font-size: 38px; font-weight: bold; color: var(--timer-normal); z-index: 10; cursor: pointer; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
         
-        /* APPLE GLASSMORPHISM (BUZLU CAM) TASARIMLARI */
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -39,96 +48,109 @@
             border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .rank-display { font-size: 14px; color: var(--tennis-color); font-weight: bold; margin-bottom: 10px; padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(223, 255, 0, 0.3); background: rgba(223, 255, 0, 0.05); z-index: 10;}
+        .rank-display { font-size: 13px; color: var(--tennis-color); font-weight: bold; padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(223, 255, 0, 0.3); background: rgba(223, 255, 0, 0.05); z-index: 10;}
 
-        /* YENİ: GÜNLÜK SERİ TABELASI */
         .streak-box {
-            font-size: 14px; font-weight: bold; margin-bottom: 15px; padding: 8px 20px; z-index: 10;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;
-        }
-        .streak-box.completed {
-            background: rgba(239, 159, 39, 0.15); border-color: var(--streak-color); color: var(--streak-color);
-            box-shadow: 0 0 15px rgba(239, 159, 39, 0.3); transform: scale(1.02);
+            font-size: 13px; font-weight: bold; padding: 12px 15px; z-index: 10;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; width: 90%; max-width: 400px;
         }
 
-        .badges-container { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; width: 90%; max-width: 400px; z-index: 10;}
-        .badge { font-size: 11px; font-weight: bold; padding: 6px 10px; background: rgba(255,255,255,0.05); border-radius: 12px; color: #666; border: 1px solid #333; transition: all 0.3s; }
+        .badges-container { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 90%; max-width: 400px; z-index: 10;}
+        .badge { font-size: 11px; font-weight: bold; padding: 5px 8px; background: rgba(255,255,255,0.05); border-radius: 12px; color: #666; border: 1px solid #333; transition: all 0.3s; }
         .badge.earned { background: rgba(239, 159, 39, 0.2); color: var(--streak-color); border: 1px solid var(--streak-color); box-shadow: 0 0 8px rgba(239, 159, 39, 0.4); }
 
-        .input-name { font-size: 20px; padding: 12px 15px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); color: white; text-align: center; margin-bottom: 10px; outline: none; width: 80%; max-width: 300px; z-index: 10; transition: border-color 0.3s; }
+        .input-name { font-size: 18px; padding: 10px 15px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); color: white; text-align: center; outline: none; width: 80%; max-width: 300px; z-index: 10; transition: border-color 0.3s; }
         .input-name:focus { border-color: var(--timer-normal); }
         
-        .stats-box { font-size: 14px; color: #E8E8E8; margin-bottom: 15px; z-index: 10; padding: 15px; width: 85%; max-width: 400px; text-align: left; line-height: 1.5; border-left: 4px solid var(--timer-normal); }
+        .stats-box { font-size: 13px; color: #E8E8E8; z-index: 10; padding: 12px 15px; width: 90%; max-width: 400px; text-align: left; line-height: 1.4; border-left: 4px solid var(--timer-normal); }
         
-        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 22px; font-weight: bold; padding: 16px 40px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; z-index: 10; margin-top: 5px; touch-action: manipulation; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); }
+        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 20px; font-weight: bold; padding: 14px 30px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; z-index: 10; touch-action: manipulation; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); }
         .btn-primary:active { transform: scale(0.95); }
         
-        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 15px; font-weight: bold; padding: 12px 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: background-color 0.2s; margin-bottom: 10px; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: background-color 0.2s; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
         .btn-secondary:active { background-color: rgba(255,255,255,0.2); }
         
-        .btn-pass { background-color: rgba(239, 159, 39, 0.1); color: var(--spam-flash); font-size: 16px; font-weight: bold; padding: 14px 0; border: 1px solid rgba(239, 159, 39, 0.3); border-radius: 14px; cursor: pointer; transition: all 0.2s; margin-bottom: 15px; width: 100%; max-width: 400px; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);}
-        .btn-pass:active { background-color: rgba(239, 159, 39, 0.3); transform: scale(0.98); }
-
-        .btn-reward { background-color: var(--streak-color); color: #111; font-size: 14px; font-weight: bold; padding: 12px 14px; border: none; border-radius: 10px; cursor: pointer; transition: transform 0.1s; }
-        .btn-reward.selected { background-color: var(--correct-flash); color: white; border: 2px solid white; }
-        .btn-reward.disabled { opacity: 0.4; pointer-events: none; background-color: #555; color: #aaa; }
+        /* Oyun İçi Başlık Barı 10px'den 50px'e çıkarıldı */
+        .game-header { width: 100%; display: flex; flex-direction: column; position: absolute; top: max(env(safe-area-inset-top), 50px); left: 0; padding: 0 20px; z-index: 5;}
+        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 16px; font-weight: bold; }
         
-        .reward-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; width: 100%; min-height: 60px; align-items: center;}
-        .lgs-message { font-size: 15px; color: #E8E8E8; margin: 15px auto; font-style: italic; line-height: 1.5; max-width: 600px; z-index: 10; padding: 15px; border-left: 4px solid var(--tennis-color); }
-        .mistakes-box { font-size: 14px; color: #E8E8E8; margin: 10px auto; line-height: 1.5; max-width: 600px; z-index: 10; padding: 15px; border-left: 4px solid var(--timer-critical); display: none; text-align: left; width: 100%;}
-        
-        .game-header { width: 100%; display: flex; flex-direction: column; position: absolute; top: 0; left: 0; padding: 15px 20px 5px 20px; z-index: 5;}
-        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 18px; font-weight: bold; }
-        
-        .progress-container { width: 100%; height: 8px; background-color: rgba(0,0,0,0.3); border-radius: 4px; margin-top: 15px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-bar { height: 100%; width: 0%; position: absolute; top: 0; left: 0; border-radius: 4px; }
+        .progress-container { width: 100%; height: 6px; background-color: rgba(0,0,0,0.3); border-radius: 3px; margin-top: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .progress-bar { height: 100%; width: 0%; position: absolute; top: 0; left: 0; border-radius: 3px; }
         .progress-bar.ghost { background-color: #444; z-index: 1; transition: width 1s linear; }
         .progress-bar.actual { background-color: var(--streak-color); z-index: 2; transition: width 0.3s ease-out; box-shadow: 0 0 10px var(--streak-color); }
         
-        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 60px; position: relative; width: 100%; z-index: 5;}
+        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; z-index: 5; margin-top: 50px;}
         
-        .mic-indicator { position: absolute; top: -30px; color: var(--timer-critical); font-size: 16px; font-weight: bold; animation: pulse 1.5s infinite; display: none; }
+        .mic-indicator { position: absolute; top: 10px; color: var(--timer-critical); font-size: 14px; font-weight: bold; animation: pulse 1.5s infinite; display: none; }
         
-        .question { font-size: 64px; font-weight: bold; margin-bottom: 10px; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .answer-input { font-size: 64px; height: 80px; min-width: 150px; border-bottom: 4px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 5px; color: var(--timer-normal); transition: color 0.1s; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4); }
+        .question { font-size: 12vw; max-font-size: 56px; font-weight: bold; margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .answer-input { font-size: 12vw; max-font-size: 56px; height: 65px; min-width: 120px; border-bottom: 3px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 5px; color: var(--timer-normal); transition: color 0.1s; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4); }
         .answer-input.text-wrong { color: var(--wrong-flash) !important; text-shadow: 0 0 15px rgba(226, 75, 74, 0.6); border-bottom-color: var(--wrong-flash); }
         
-        .keyboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 400px; padding: 10px; margin-bottom: 10px; z-index: 5; }
-        .key { background-color: var(--key-bg); color: var(--text-color); font-size: 26px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px 0; touch-action: manipulation; box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.05s, background-color 0.1s; }
+        .bottom-controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: max(env(safe-area-inset-bottom), 10px); }
+        
+        .btn-pass { background-color: rgba(239, 159, 39, 0.1); color: var(--spam-flash); font-size: 15px; font-weight: bold; padding: 12px 0; border: 1px solid rgba(239, 159, 39, 0.3); border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; width: 100%; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);}
+        .btn-pass:active { background-color: rgba(239, 159, 39, 0.3); transform: scale(0.98); }
+
+        .keyboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+        .key { background-color: var(--key-bg); color: var(--text-color); font-size: 24px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; height: 8vh; min-height: 50px; max-height: 70px; display: flex; align-items: center; justify-content: center; touch-action: manipulation; box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.05s, background-color 0.1s; }
         .key:active { transform: scale(0.92); background-color: rgba(255,255,255,0.1); }
         
-        #coachPanel { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(13, 13, 20, 0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
-        #chartContainer { width: 95%; max-width: 800px; height: 50vh; min-height: 300px; background: rgba(26, 26, 46, 0.5); border-radius: 16px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+        #coachPanel { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(13, 13, 20, 0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: max(env(safe-area-inset-top), 50px) 15px 15px 15px; }
+        #chartContainer { width: 100%; max-width: 600px; height: 40vh; min-height: 250px; background: rgba(26, 26, 46, 0.5); border-radius: 16px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         
+        .lgs-message { font-size: 14px; color: #E8E8E8; font-style: italic; line-height: 1.4; width: 90%; max-width: 500px; z-index: 10; padding: 12px; border-left: 4px solid var(--tennis-color); }
+        .mistakes-box { font-size: 13px; color: #E8E8E8; line-height: 1.4; width: 90%; max-width: 500px; z-index: 10; padding: 12px; border-left: 4px solid var(--timer-critical); display: none; text-align: left;}
+        
+        .reward-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; align-items: center;}
+        .btn-reward { background-color: var(--streak-color); color: #111; font-size: 13px; font-weight: bold; padding: 10px 12px; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s; }
+        .btn-reward.selected { background-color: var(--correct-flash); color: white; border: 2px solid white; }
+        .btn-reward.disabled { opacity: 0.4; pointer-events: none; background-color: #555; color: #aaa; }
+
         @keyframes alarm { 0% { background-color: #2b0a0a; } 50% { background-color: #1a0505; } 100% { background-color: #2b0a0a; } }
-        .exam-intro { animation: alarm 1.5s infinite; }
-        .exam-title { color: var(--timer-critical); font-size: 32px; font-weight: bold; margin-bottom: 15px; text-shadow: 0 0 20px var(--timer-critical); }
-        .exam-desc { color: #ddd; font-size: 16px; margin: 10px 20px 30px 20px; max-width: 500px; line-height: 1.5; }
+        .exam-intro { animation: alarm 1.5s infinite; justify-content: center; gap: 20px;}
+        .exam-title { color: var(--timer-critical); font-size: 32px; font-weight: bold; text-shadow: 0 0 20px var(--timer-critical); }
+        .exam-desc { color: #ddd; font-size: 15px; width: 90%; max-width: 400px; line-height: 1.5; padding: 20px;}
 
         @keyframes floatUp { 0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } 100% { opacity: 0; transform: translate3d(0, -50px, 0) scale(1.3); } }
         .floating-text { position: absolute; font-weight: bold; font-size: 22px; pointer-events: none; z-index: 9999; animation: floatUp 0.8s ease-out forwards; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
     </style>
 </head>
 <body>
 
-    <div class="toast" id="toastMsg" style="position:fixed; top:15%; left:50%; transform:translateX(-50%); background:rgba(239,159,39,0.95); padding:12px 24px; border-radius:12px; opacity:0; z-index:10000; transition:opacity 0.3s; pointer-events:none; font-weight:bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">Odaklan! 🎯</div>
+    <div class="toast" id="toastMsg" style="position:fixed; top:10%; left:50%; transform:translateX(-50%); background:rgba(239,159,39,0.95); padding:10px 20px; border-radius:12px; opacity:0; z-index:10000; transition:opacity 0.3s; pointer-events:none; font-weight:bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">Odaklan! 🎯</div>
 
     <div id="coachPanel">
         <h2 style="color:var(--timer-normal); margin-bottom:5px;">📊 LGS Performans Analizi</h2>
         <p style="color:#aaa; font-size:12px; margin-bottom:15px;">Son 20 setin soru başı hızları (Barlar düşükse daha iyi)</p>
         <div id="chartContainer"></div>
-        <button class="btn-secondary" onclick="document.getElementById('coachPanel').style.display='none'" style="margin-top:10px; padding: 15px 40px; font-size:18px;">Paneli Kapat</button>
+        <button class="btn-secondary" onclick="document.getElementById('coachPanel').style.display='none'" style="padding: 12px 30px; font-size:16px;">Paneli Kapat</button>
     </div>
 
-    <!-- GİRİŞ EKRANI -->
+    <!-- ANA EKRAN (GÜNCELLENMİŞ DEV OYUNCU PANOSU) -->
     <div id="startScreen" class="screen active">
         <div class="title" id="mainTitle">Math Hero LGS</div>
         <div id="rankDisplay" class="rank-display">🏆 Yükleniyor...</div>
         
-        <!-- YENİ: GÜNLÜK SERİ TABELASI (APPLE GLASS EFEKTİ) -->
-        <div id="streakDisplay" class="glass-panel streak-box">🔥 Seri Yükleniyor...</div>
+        <div class="glass-panel streak-box" style="flex-direction: column; gap: 8px; margin-bottom: 10px;">
+            <div style="font-size:15px; color:var(--timer-normal); font-weight:bold;">🏆 Büyük Hedef: Profesyonel Raket</div>
+            
+            <div class="progress-container" style="margin-top:0; height: 10px; width: 100%;">
+                <div class="progress-bar actual" id="racketProgressBar" style="width: 0%; background-color: var(--tennis-color); box-shadow: 0 0 10px var(--tennis-color); transition: width 0.5s ease-out;"></div>
+            </div>
+            
+            <div style="font-size:14px; color:#ddd; font-weight:bold;">
+                Rakete Son <span id="racketLeftCount" style="color:var(--timer-critical); font-size:16px;">500</span> Set! 
+                <span style="font-size:12px; color:#aaa; font-weight:normal;">(<span id="racketSetCount">0</span>/500)</span>
+            </div>
+
+            <div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin: 5px 0;"></div>
+
+            <div id="streakText" style="font-size:13px; color:#ccc; line-height:1.5;">
+                🔥 Yükleniyor...
+            </div>
+        </div>
         
         <div class="badges-container" id="badgesContainer">
             <span class="badge" id="badge1">🕵️ Kayıp Halka</span>
@@ -145,18 +167,18 @@
 
     <div id="examIntroScreen" class="screen exam-intro">
         <div class="exam-title">🚨 LGS ARENASI 🚨</div>
-        <h2 id="examName" style="color:var(--streak-color); font-size: 28px; margin-bottom: 10px;">1. ARENA</h2>
-        <div class="glass-panel exam-desc" id="examDesc" style="padding: 20px;">Açıklama yükleniyor...</div>
+        <h2 id="examName" style="color:var(--streak-color); font-size: 26px;">1. ARENA</h2>
+        <div class="glass-panel exam-desc" id="examDesc">Açıklama yükleniyor...</div>
         <button id="btnStartExam" class="btn-primary" style="background-color: var(--timer-critical); box-shadow: 0 0 20px rgba(226,75,74,0.5);">Savaşa Başla</button>
     </div>
 
     <div id="gameScreen" class="screen">
         <div class="game-header">
             <div class="header-top">
-                <div><div class="timer" id="timerDisplay">⏱ 60</div><div id="stageDisplay" style="color:#888; font-size:14px;">Set 1</div></div>
+                <div><div class="timer" id="timerDisplay">⏱ 60</div><div id="stageDisplay" style="color:#888; font-size:13px;">Set 1</div></div>
                 <div style="text-align:right;">
                     <div class="score" id="scoreDisplay">🔥 0</div>
-                    <div style="color:#aaa; font-size:12px;">Hedef: <span id="targetText">15</span></div>
+                    <div style="color:#aaa; font-size:11px;">Hedef: <span id="targetText">15</span></div>
                 </div>
             </div>
             <div class="progress-container">
@@ -167,26 +189,26 @@
         
         <div class="arena">
             <div id="micIndicator" class="mic-indicator">🎙️ Dinleniyor...</div>
-            <div id="aiAnalysisDisplay" style="color:var(--tennis-color); font-size:14px; margin-bottom:10px; font-weight:bold;">Sistem Yükleniyor...</div>
+            <div id="aiAnalysisDisplay" style="color:var(--tennis-color); font-size:13px; margin-bottom:5px; font-weight:bold;">Sistem Yükleniyor...</div>
             <div class="question" id="questionDisplay">?</div>
             <div class="answer-input" id="answerDisplay"></div>
-            
-            <div id="sniperOptions" style="display:none; gap:12px; margin-top:20px; width:100%; max-width:400px; justify-content:space-between;"></div>
+            <div id="sniperOptions" style="display:none; gap:10px; margin-top:15px; width:100%; max-width:400px; justify-content:space-between;"></div>
         </div>
         
-        <button id="btnPass" class="btn-pass glass-panel">⏭️ Pas Geç (Ses: "Geç")</button>
-
-        <div class="keyboard-grid">
-            <button class="key num-key" data-val="1">1</button><button class="key num-key" data-val="2">2</button><button class="key num-key" data-val="3">3</button>
-            <button class="key num-key" data-val="4">4</button><button class="key num-key" data-val="5">5</button><button class="key num-key" data-val="6">6</button>
-            <button class="key num-key" data-val="7">7</button><button class="key num-key" data-val="8">8</button><button class="key num-key" data-val="9">9</button>
-            <button class="key num-key" data-val="C">C</button><button class="key num-key" data-val="0">0</button><button class="key num-key" data-val="⌫">⌫</button>
+        <div class="bottom-controls">
+            <button id="btnPass" class="btn-pass glass-panel">⏭️ Pas Geç (Ses: "Geç")</button>
+            <div class="keyboard-grid">
+                <button class="key num-key" data-val="1">1</button><button class="key num-key" data-val="2">2</button><button class="key num-key" data-val="3">3</button>
+                <button class="key num-key" data-val="4">4</button><button class="key num-key" data-val="5">5</button><button class="key num-key" data-val="6">6</button>
+                <button class="key num-key" data-val="7">7</button><button class="key num-key" data-val="8">8</button><button class="key num-key" data-val="9">9</button>
+                <button class="key num-key" data-val="C">C</button><button class="key num-key" data-val="0">0</button><button class="key num-key" data-val="⌫">⌫</button>
+            </div>
         </div>
     </div>
 
     <div id="transitionScreen" class="screen">
         <div class="title" id="transTitle" style="color:var(--timer-normal);">🎯 SET BİTTİ</div>
-        <div id="passedStageDisplay" style="font-size:15px; color:#ddd; margin-bottom:15px;"></div>
+        <div id="passedStageDisplay" style="font-size:14px; color:#ddd;"></div>
         
         <div id="mistakesDisplay" class="glass-panel mistakes-box"></div>
         <div class="glass-panel lgs-message" id="lgsMessage"></div>
@@ -197,8 +219,10 @@
 
     <script>
         (function() {
-            var parentPhoneNumber = "905XXXXXXXXX"; 
-            var api_key = "123456"; 
+            var parentPhoneNumber = "905322771049"; 
+            var api_key = "7794954"; 
+            
+            var storageVersion = "_v13"; 
             
             var playerName = "Ömer";
             var currentStage = 1;
@@ -220,18 +244,21 @@
             
             var ghostStartTime = 0;
             var ghostTotalTime = 0; 
-            var playerXP = parseInt(localStorage.getItem('mathHeroXP')) || 0;
+            
+            var playerXP = parseInt(localStorage.getItem('mathHeroXP' + storageVersion)) || 0;
+            var totalSetsCompleted = parseInt(localStorage.getItem('mathHeroTotalSets' + storageVersion)) || 0;
             
             var isExamMode = false;
             var currentExam = 0;
-            var earnedBadges = JSON.parse(localStorage.getItem('mathHeroBadges')) || {1:false, 2:false, 3:false, 4:false};
+            var earnedBadges = JSON.parse(localStorage.getItem('mathHeroBadges' + storageVersion)) || {1:false, 2:false, 3:false, 4:false};
             
-            // --- YENİ: GÜNLÜK SERİ DEĞİŞKENLERİ ---
-            var streakData = { lastPlayedDate: "", setsToday: 0, streakCount: 0, lastStreakDate: "" };
+            var streakData = { lastPlayedDate: "", setsToday: 0, streakCount: 0, lastStreakDate: "", opensToday: 0 };
             try {
-                var localStreak = localStorage.getItem('mathHeroStreak');
+                var localStreak = localStorage.getItem('mathHeroStreak' + storageVersion);
                 if (localStreak) streakData = JSON.parse(localStreak);
             } catch(e) {}
+
+            var currentDailySession = 1;
 
             var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             var recognition = null;
@@ -242,37 +269,30 @@
 
             var audioCtx = null;
             
-            // --- YENİ: GÜNLÜK SERİ MANTIĞI ---
-            function getTodayStr() {
-                var d = new Date();
-                return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
-            }
+            function getTodayStr() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
+            function getYesterdayStr() { var d = new Date(); d.setDate(d.getDate() - 1); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
 
-            function getYesterdayStr() {
-                var d = new Date();
-                d.setDate(d.getDate() - 1);
-                return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+            function initStreakOnLoad() {
+                var todayStr = getTodayStr();
+                if (streakData.lastPlayedDate !== todayStr) {
+                    streakData.setsToday = 0;
+                    streakData.opensToday = 0;
+                    streakData.lastPlayedDate = todayStr;
+                    try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
+                }
             }
 
             function updateStreakLogic(setCompleted) {
                 var todayStr = getTodayStr();
                 var yesterdayStr = getYesterdayStr();
 
-                // Yeni gün başladıysa bugünkü setleri sıfırla
-                if (streakData.lastPlayedDate !== todayStr) {
-                    streakData.setsToday = 0;
-                    streakData.lastPlayedDate = todayStr;
-                }
-
-                // Seri kopmuş mu kontrolü (Dün veya bugün hedef tamamlanmadıysa)
                 if (streakData.lastStreakDate !== todayStr && streakData.lastStreakDate !== yesterdayStr && streakData.lastStreakDate !== "") {
                     streakData.streakCount = 0; 
                 }
 
                 if (setCompleted) {
                     streakData.setsToday++;
-                    // Hedef: Günde 5 Set
-                    if (streakData.setsToday === 5 && streakData.lastStreakDate !== todayStr) {
+                    if (streakData.setsToday >= 5 && streakData.lastStreakDate !== todayStr) {
                         streakData.streakCount++;
                         streakData.lastStreakDate = todayStr;
                         showToastMessage("🔥 GÜNLÜK HEDEF TAMAMLANDI! Seri: " + streakData.streakCount + " Gün", true);
@@ -280,22 +300,37 @@
                     }
                 }
 
-                try { localStorage.setItem('mathHeroStreak', JSON.stringify(streakData)); } catch(e) {}
-                renderStreakUI();
+                try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
+                renderDashboardUI();
             }
 
-            function renderStreakUI() {
-                var box = document.getElementById('streakDisplay');
-                if (streakData.lastStreakDate === getTodayStr()) {
-                    box.innerHTML = "🔥 " + streakData.streakCount + " Günlük Seri! (Bugün: Tamamlandı ✅)";
-                    box.classList.add('completed');
-                } else {
-                    box.innerHTML = "🔥 Seri: " + streakData.streakCount + " Gün (Bugün: " + streakData.setsToday + "/5 Set)";
-                    box.classList.remove('completed');
-                }
+            function renderDashboardUI() {
+                var textDiv = document.getElementById('streakText');
+                var todaySets = streakData.setsToday || 0;
+                
+                var nextOpen = (streakData.opensToday || 0) + 1; 
+                
+                var html = "🔥 Efsanevi Seri: <span style='color:var(--streak-color); font-weight:bold;'>" + (streakData.streakCount || 0) + " Gün</span><br>";
+                html += "📅 Bugün Çözülen: <span style='color:white;'>" + todaySets + " Set</span><br>";
+                html += "🔄 Sıradaki Giriş: <span style='color:var(--timer-normal);'>" + nextOpen + ". Oturum</span>";
+                
+                if (textDiv) textDiv.innerHTML = html;
             }
-            // İlk açılışta UI'ı güncelle
+
+            function updateRacketProgress() {
+                var pct = (totalSetsCompleted / 500) * 100;
+                if (pct > 100) pct = 100;
+                var bar = document.getElementById('racketProgressBar');
+                if(bar) bar.style.width = pct + '%';
+                var txt = document.getElementById('racketSetCount');
+                if(txt) txt.innerText = totalSetsCompleted;
+                var leftTxt = document.getElementById('racketLeftCount');
+                if(leftTxt) leftTxt.innerText = Math.max(0, 500 - totalSetsCompleted);
+            }
+
+            initStreakOnLoad();
             updateStreakLogic(false);
+            updateRacketProgress();
 
             function initAudio() {
                 if (!audioCtx) {
@@ -385,12 +420,12 @@
 
             function addXP(amount) {
                 playerXP += amount;
-                try { localStorage.setItem('mathHeroXP', playerXP.toString()); } catch(e) {}
+                try { localStorage.setItem('mathHeroXP' + storageVersion, playerXP.toString()); } catch(e) {}
                 updateRankDisplay();
             }
 
             var aiStats = { '+': { count: 0, errors: 0, totalTime: 0 }, '-': { count: 0, errors: 0, totalTime: 0 }, '×': { count: 0, errors: 0, totalTime: 0 }, '÷': { count: 0, errors: 0, totalTime: 0 } };
-            try { var localData = localStorage.getItem('mathHeroAIStats'); if (localData) { var parsed = JSON.parse(localData); if (parsed && parsed['+']) { aiStats = parsed; } } } catch(e) {}
+            try { var localData = localStorage.getItem('mathHeroAIStats' + storageVersion); if (localData) { var parsed = JSON.parse(localData); if (parsed && parsed['+']) { aiStats = parsed; } } } catch(e) {}
             var lastOp = '×';
 
             var tennisStories = [
@@ -430,7 +465,7 @@
 
             function showCoachPanel() {
                 var history = [];
-                try { history = JSON.parse(localStorage.getItem('mathHeroHistory') || '[]'); } catch(e) {}
+                try { history = JSON.parse(localStorage.getItem('mathHeroHistory' + storageVersion) || '[]'); } catch(e) {}
                 var panel = document.getElementById('coachPanel');
                 var chartDiv = document.getElementById('chartContainer');
                 
@@ -683,7 +718,7 @@
                 document.getElementById('progressBar').style.width = percentage + "%";
             }
 
-            function saveAI() { try { localStorage.setItem('mathHeroAIStats', JSON.stringify(aiStats)); } catch(e) {} }
+            function saveAI() { try { localStorage.setItem('mathHeroAIStats' + storageVersion, JSON.stringify(aiStats)); } catch(e) {} }
 
             function calculateWeakestOp() {
                 var weakest = '+'; var maxScore = -1;
@@ -704,7 +739,7 @@
 
             function updateStatsDisplay() {
                 var history = [];
-                try { history = JSON.parse(localStorage.getItem('mathHeroHistory') || '[]'); } catch(e) {}
+                try { history = JSON.parse(localStorage.getItem('mathHeroHistory' + storageVersion) || '[]'); } catch(e) {}
                 
                 var statsDiv = document.getElementById('statsDisplay');
                 var html = "<b>🎯 LGS Antrenman Durumu:</b><br>";
@@ -949,11 +984,14 @@
                 playEpicWinSound(); 
                 addXP(500); 
                 
-                // YENİ: Sınav geçildi, günlük seriye kaydet
+                totalSetsCompleted++;
+                try { localStorage.setItem('mathHeroTotalSets' + storageVersion, totalSetsCompleted.toString()); } catch(e) {}
+                updateRacketProgress();
+
                 updateStreakLogic(true);
 
                 earnedBadges[currentExam] = true;
-                localStorage.setItem('mathHeroBadges', JSON.stringify(earnedBadges));
+                localStorage.setItem('mathHeroBadges' + storageVersion, JSON.stringify(earnedBadges));
                 updateRankDisplay();
                 
                 document.getElementById('transTitle').innerText = "🏆 ARENA FETHEDİLDİ!";
@@ -978,7 +1016,6 @@
                 document.body.classList.remove('fever-mode'); 
                 playWrongSound(); 
                 
-                // Kaybetse bile oynamış sayılır, istersen bunu kapatabilirsin ama teşvik için açık kalsın.
                 updateStreakLogic(true); 
 
                 document.getElementById('transTitle').innerText = "💀 ARENA KAYBEDİLDİ";
@@ -1003,26 +1040,29 @@
                 playComboSound(); 
                 addXP(100); 
                 
-                // YENİ: Normal Set Bitti, Günlük Seriye Kaydet
+                totalSetsCompleted++;
+                try { localStorage.setItem('mathHeroTotalSets' + storageVersion, totalSetsCompleted.toString()); } catch(e) {}
+                updateRacketProgress();
+
                 updateStreakLogic(true);
                 
                 var sum = 0;
                 for (var i = 0; i < setResponseTimes.length; i++) { sum += setResponseTimes[i]; }
                 var avgSec = setResponseTimes.length > 0 ? (sum / setResponseTimes.length / 1000).toFixed(2) : "0.00";
                 
-                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed')) || 999;
+                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed' + storageVersion)) || 999;
                 if (parseFloat(avgSec) > 0 && parseFloat(avgSec) < bestOverall) {
-                    localStorage.setItem('mathHeroBestSpeed', avgSec);
+                    localStorage.setItem('mathHeroBestSpeed' + storageVersion, avgSec);
                 }
 
                 try {
                     var history = [];
-                    var raw = localStorage.getItem('mathHeroHistory');
+                    var raw = localStorage.getItem('mathHeroHistory' + storageVersion);
                     if (raw) history = JSON.parse(raw);
                     if (!Array.isArray(history)) history = [];
                     history.push({ stage: currentStage, speed: avgSec });
                     if (history.length > 20) history = history.slice(-20);
-                    localStorage.setItem('mathHeroHistory', JSON.stringify(history));
+                    localStorage.setItem('mathHeroHistory' + storageVersion, JSON.stringify(history));
                 } catch(e) {}
 
                 var finalMsg = "";
@@ -1161,10 +1201,19 @@
 
                 container.innerHTML = "<p style='width:100%; font-size:12px; color:#aaa; margin-bottom:5px;'>🎁 Başarın İçin Ödülünü Seç:</p>";
                 var rewards = [];
-                if (currentStage >= 3) { rewards.push({id:'t', text:'⏱ Oyun İçi +5 Sn'}); }
+                
+                var smStartStage = 2 + currentDailySession; 
+                
+                if (currentStage >= 3) { 
+                    rewards.push({id:'t', text:'⏱ Oyun İçi +5 Sn'}); 
+                }
+                
+                if (currentStage >= smStartStage && (currentStage - smStartStage) % 3 === 0) {
+                    rewards.push({id:'s', text:'📱 15 Dk Sosyal Medya'});
+                }
+                
                 if (currentStage >= 5) { rewards.push({id:'a', text:'🍫 Atıştırmalık'}); }
                 if (currentStage >= 6) { rewards.push({id:'i', text:'🧃 İçecek'}); }
-                if (currentStage >= 7) { rewards.push({id:'s', text:'📱 15 Dk Sosyal Medya'}); }
 
                 for (var m = 0; m < rewards.length; m++) {
                     (function(r) {
@@ -1186,15 +1235,27 @@
             }
 
             function sendWhatsApp(rewardText) {
-                var now = new Date().toLocaleString('tr-TR');
+                var d = new Date();
+                var now = d.toLocaleDateString('tr-TR') + " " + d.toLocaleTimeString('tr-TR');
+                var randomCode = Math.random().toString(36).substring(2, 7).toUpperCase(); 
+
                 var sum = 0;
                 for (var i = 0; i < setResponseTimes.length; i++) { sum += setResponseTimes[i]; }
                 var avgSec = setResponseTimes.length > 0 ? (sum / setResponseTimes.length / 1000).toFixed(2) : "0.00";
 
-                var msg = "🚨 [SİSTEM BİLDİRİMİ]\n👤 Oyuncu: " + playerName + "\n🏆 Başarı: " + currentStage + ". Set!\n⚡ Hız: " + avgSec + " sn/soru\n🎁 Ödül: " + rewardText + "\n📅 " + now + "\n\n(Hile yapılamaz sistem mesajıdır.)";
+                var msg = "🚨 [SİSTEM BİLDİRİMİ - ONAYLI]\n" +
+                          "👤 Oyuncu: " + playerName + "\n" +
+                          "🏆 Başarı: " + currentStage + ". Set (Hız: " + avgSec + " sn)\n" +
+                          "🎁 Ödül: " + rewardText + "\n" +
+                          "📅 Zaman: " + now + "\n" +
+                          "🔐 GÜVENLİK KODU: #" + randomCode + "\n\n" +
+                          "(Bu mesaj CallMeBot API tarafından otomatik iletilmiştir. Kopyalanamaz.)";
+                          
                 var url = "https://api.callmebot.com/whatsapp.php?phone=" + parentPhoneNumber + "&text=" + encodeURIComponent(msg) + "&apikey=" + api_key;
                 
-                fetch(url).then(function() { showToastMessage("Babana İletildi! 🚀", true); });
+                fetch(url).then(function() { 
+                    showToastMessage("Babana İletildi! Kod: #" + randomCode, true); 
+                });
             }
 
             function initGame() {
@@ -1202,6 +1263,12 @@
                 var inputEl = document.getElementById('playerNameInput');
                 playerName = (inputEl && inputEl.value.trim() !== "") ? inputEl.value.trim() : "Ömer";
                 try { localStorage.setItem('mathHeroName', playerName); } catch(e) {}
+                
+                streakData.opensToday++;
+                currentDailySession = streakData.opensToday;
+                try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
+                renderDashboardUI();
+                
                 currentStage = 1;
                 extraBonusTime = 0;
                 startStage();
@@ -1229,7 +1296,7 @@
                 document.getElementById('progressBar').style.width = "0%";
                 document.getElementById('ghostBar').style.width = "0%";
                 
-                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed')) || 0;
+                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed' + storageVersion)) || 0;
                 if(bestOverall > 0) { ghostTotalTime = targetScore * bestOverall; } 
                 else { ghostTotalTime = targetScore * 4; }
                 ghostStartTime = new Date().getTime();
