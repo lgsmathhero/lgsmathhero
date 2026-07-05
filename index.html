@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Odak Sürümü v13.1</title>
+    <title>Math Hero LGS - Kusursuz Sürüm v13.3</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
+        /* HATA ÇÖZÜMÜ: Tüm elementlere Kutu Modeli (Border-Box) kuralı eklendi */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root {
             --bg-color: #0D0D14; --text-color: #FFFFFF; --timer-normal: #5DCAA5;
             --timer-critical: #E24B4A; --correct-flash: #1D9E75; --wrong-flash: #E24B4A;
@@ -15,10 +20,10 @@
         }
         
         html, body { 
-            position: fixed; width: 100vw; 
+            position: fixed; width: 100%; /* 100vw yerine 100% kullanıldı */
             height: 100vh; height: 100dvh;
             overflow: hidden; touch-action: none; 
-            box-sizing: border-box; margin: 0; padding: 0; 
+            margin: 0; padding: 0; 
             user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; 
         }
         
@@ -31,28 +36,32 @@
         .fever-text { color: var(--streak-color); font-weight: bold; font-size: 14px; animation: pulse 0.5s infinite; text-shadow: 0 0 10px var(--streak-color); margin-left: 5px; }
 
         .screen { 
-            display: none; flex-direction: column; justify-content: space-evenly; 
-            align-items: center; width: 100vw; height: 100dvh; 
-            /* Üst boşluk 10px'den 50px'e çıkarıldı (Batarya/Saat için) */
-            padding: max(env(safe-area-inset-top), 50px) 15px max(env(safe-area-inset-bottom), 15px) 15px; 
+            display: none; flex-direction: column; width: 100%; /* 100vw yerine 100% kullanıldı */
+            height: 100dvh; 
+            padding: max(env(safe-area-inset-top), 45px) 15px max(env(safe-area-inset-bottom), 20px) 15px; 
             text-align: center; position: relative; 
+            overflow-y: auto; overflow-x: hidden; 
         }
         .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
         
-        .title { font-size: 7.5vw; max-font-size: 38px; font-weight: bold; color: var(--timer-normal); z-index: 10; cursor: pointer; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
+        #startScreen, #transitionScreen, #examIntroScreen { justify-content: flex-start; align-items: center; gap: 12px; }
+        #gameScreen { justify-content: space-between; align-items: center; padding-top: max(env(safe-area-inset-top), 40px); }
+        
+        .title { font-size: clamp(24px, 8vw, 38px); font-weight: bold; color: var(--timer-normal); z-index: 10; cursor: pointer; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
         
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 90%; max-width: 400px;
         }
 
         .rank-display { font-size: 13px; color: var(--tennis-color); font-weight: bold; padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(223, 255, 0, 0.3); background: rgba(223, 255, 0, 0.05); z-index: 10;}
 
         .streak-box {
-            font-size: 13px; font-weight: bold; padding: 12px 15px; z-index: 10;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; width: 90%; max-width: 400px;
+            font-size: 13px; font-weight: bold; padding: 10px 15px; z-index: 10;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; 
         }
 
         .badges-container { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 90%; max-width: 400px; z-index: 10;}
@@ -62,32 +71,31 @@
         .input-name { font-size: 18px; padding: 10px 15px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); color: white; text-align: center; outline: none; width: 80%; max-width: 300px; z-index: 10; transition: border-color 0.3s; }
         .input-name:focus { border-color: var(--timer-normal); }
         
-        .stats-box { font-size: 13px; color: #E8E8E8; z-index: 10; padding: 12px 15px; width: 90%; max-width: 400px; text-align: left; line-height: 1.4; border-left: 4px solid var(--timer-normal); }
+        .stats-box { font-size: 13px; color: #E8E8E8; z-index: 10; padding: 10px 15px; text-align: left; line-height: 1.4; border-left: 4px solid var(--timer-normal); }
         
-        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 20px; font-weight: bold; padding: 14px 30px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; z-index: 10; touch-action: manipulation; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); }
+        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 20px; font-weight: bold; padding: 14px 30px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; z-index: 10; touch-action: manipulation; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); width: 80%; max-width: 300px; flex-shrink: 0;}
         .btn-primary:active { transform: scale(0.95); }
         
-        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: background-color 0.2s; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: background-color 0.2s; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); width: auto;}
         .btn-secondary:active { background-color: rgba(255,255,255,0.2); }
         
-        /* Oyun İçi Başlık Barı 10px'den 50px'e çıkarıldı */
-        .game-header { width: 100%; display: flex; flex-direction: column; position: absolute; top: max(env(safe-area-inset-top), 50px); left: 0; padding: 0 20px; z-index: 5;}
-        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 16px; font-weight: bold; }
+        .game-header { width: 100%; display: flex; flex-direction: column; padding: 0 10px; z-index: 5; flex-shrink: 0;}
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; font-size: 16px; font-weight: bold; }
         
-        .progress-container { width: 100%; height: 6px; background-color: rgba(0,0,0,0.3); border-radius: 3px; margin-top: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .progress-container { width: 100%; height: 6px; background-color: rgba(0,0,0,0.3); border-radius: 3px; margin-top: 15px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
         .progress-bar { height: 100%; width: 0%; position: absolute; top: 0; left: 0; border-radius: 3px; }
         .progress-bar.ghost { background-color: #444; z-index: 1; transition: width 1s linear; }
         .progress-bar.actual { background-color: var(--streak-color); z-index: 2; transition: width 0.3s ease-out; box-shadow: 0 0 10px var(--streak-color); }
         
-        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; z-index: 5; margin-top: 50px;}
+        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; z-index: 5; min-height: 150px;}
         
         .mic-indicator { position: absolute; top: 10px; color: var(--timer-critical); font-size: 14px; font-weight: bold; animation: pulse 1.5s infinite; display: none; }
         
-        .question { font-size: 12vw; max-font-size: 56px; font-weight: bold; margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .answer-input { font-size: 12vw; max-font-size: 56px; height: 65px; min-width: 120px; border-bottom: 3px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 5px; color: var(--timer-normal); transition: color 0.1s; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4); }
+        .question { font-size: clamp(40px, 12vw, 56px); font-weight: bold; margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .answer-input { font-size: clamp(40px, 12vw, 56px); height: 65px; min-width: 120px; border-bottom: 3px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 5px; color: var(--timer-normal); transition: color 0.1s; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4); }
         .answer-input.text-wrong { color: var(--wrong-flash) !important; text-shadow: 0 0 15px rgba(226, 75, 74, 0.6); border-bottom-color: var(--wrong-flash); }
         
-        .bottom-controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: max(env(safe-area-inset-bottom), 10px); }
+        .bottom-controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: max(env(safe-area-inset-bottom), 10px); flex-shrink: 0; margin-top: 10px;}
         
         .btn-pass { background-color: rgba(239, 159, 39, 0.1); color: var(--spam-flash); font-size: 15px; font-weight: bold; padding: 12px 0; border: 1px solid rgba(239, 159, 39, 0.3); border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; width: 100%; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);}
         .btn-pass:active { background-color: rgba(239, 159, 39, 0.3); transform: scale(0.98); }
@@ -96,20 +104,20 @@
         .key { background-color: var(--key-bg); color: var(--text-color); font-size: 24px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; height: 8vh; min-height: 50px; max-height: 70px; display: flex; align-items: center; justify-content: center; touch-action: manipulation; box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.05s, background-color 0.1s; }
         .key:active { transform: scale(0.92); background-color: rgba(255,255,255,0.1); }
         
-        #coachPanel { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(13, 13, 20, 0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: max(env(safe-area-inset-top), 50px) 15px 15px 15px; }
+        #coachPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; background: rgba(13, 13, 20, 0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: max(env(safe-area-inset-top), 50px) 15px 15px 15px; }
         #chartContainer { width: 100%; max-width: 600px; height: 40vh; min-height: 250px; background: rgba(26, 26, 46, 0.5); border-radius: 16px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         
-        .lgs-message { font-size: 14px; color: #E8E8E8; font-style: italic; line-height: 1.4; width: 90%; max-width: 500px; z-index: 10; padding: 12px; border-left: 4px solid var(--tennis-color); }
-        .mistakes-box { font-size: 13px; color: #E8E8E8; line-height: 1.4; width: 90%; max-width: 500px; z-index: 10; padding: 12px; border-left: 4px solid var(--timer-critical); display: none; text-align: left;}
+        .lgs-message { font-size: 14px; color: #E8E8E8; font-style: italic; line-height: 1.4; padding: 12px; border-left: 4px solid var(--tennis-color); margin-top: 10px;}
+        .mistakes-box { font-size: 13px; color: #E8E8E8; line-height: 1.4; padding: 12px; border-left: 4px solid var(--timer-critical); display: none; text-align: left;}
         
-        .reward-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; align-items: center;}
+        .reward-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; align-items: center; margin-top: 10px;}
         .btn-reward { background-color: var(--streak-color); color: #111; font-size: 13px; font-weight: bold; padding: 10px 12px; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s; }
         .btn-reward.selected { background-color: var(--correct-flash); color: white; border: 2px solid white; }
         .btn-reward.disabled { opacity: 0.4; pointer-events: none; background-color: #555; color: #aaa; }
 
         @keyframes alarm { 0% { background-color: #2b0a0a; } 50% { background-color: #1a0505; } 100% { background-color: #2b0a0a; } }
         .exam-intro { animation: alarm 1.5s infinite; justify-content: center; gap: 20px;}
-        .exam-title { color: var(--timer-critical); font-size: 32px; font-weight: bold; text-shadow: 0 0 20px var(--timer-critical); }
+        .exam-title { color: var(--timer-critical); font-size: clamp(28px, 8vw, 36px); font-weight: bold; text-shadow: 0 0 20px var(--timer-critical); }
         .exam-desc { color: #ddd; font-size: 15px; width: 90%; max-width: 400px; line-height: 1.5; padding: 20px;}
 
         @keyframes floatUp { 0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } 100% { opacity: 0; transform: translate3d(0, -50px, 0) scale(1.3); } }
@@ -128,28 +136,21 @@
         <button class="btn-secondary" onclick="document.getElementById('coachPanel').style.display='none'" style="padding: 12px 30px; font-size:16px;">Paneli Kapat</button>
     </div>
 
-    <!-- ANA EKRAN (GÜNCELLENMİŞ DEV OYUNCU PANOSU) -->
     <div id="startScreen" class="screen active">
         <div class="title" id="mainTitle">Math Hero LGS</div>
         <div id="rankDisplay" class="rank-display">🏆 Yükleniyor...</div>
         
-        <div class="glass-panel streak-box" style="flex-direction: column; gap: 8px; margin-bottom: 10px;">
+        <div class="glass-panel streak-box" style="flex-direction: column; gap: 8px;">
             <div style="font-size:15px; color:var(--timer-normal); font-weight:bold;">🏆 Büyük Hedef: Profesyonel Raket</div>
-            
             <div class="progress-container" style="margin-top:0; height: 10px; width: 100%;">
                 <div class="progress-bar actual" id="racketProgressBar" style="width: 0%; background-color: var(--tennis-color); box-shadow: 0 0 10px var(--tennis-color); transition: width 0.5s ease-out;"></div>
             </div>
-            
             <div style="font-size:14px; color:#ddd; font-weight:bold;">
                 Rakete Son <span id="racketLeftCount" style="color:var(--timer-critical); font-size:16px;">500</span> Set! 
                 <span style="font-size:12px; color:#aaa; font-weight:normal;">(<span id="racketSetCount">0</span>/500)</span>
             </div>
-
-            <div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin: 5px 0;"></div>
-
-            <div id="streakText" style="font-size:13px; color:#ccc; line-height:1.5;">
-                🔥 Yükleniyor...
-            </div>
+            <div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin: 2px 0;"></div>
+            <div id="streakText" style="font-size:13px; color:#ccc; line-height:1.5;">🔥 Yükleniyor...</div>
         </div>
         
         <div class="badges-container" id="badgesContainer">
@@ -161,13 +162,13 @@
         
         <input type="text" id="playerNameInput" class="input-name" placeholder="Oyuncu Adı..." />
         <div id="statsDisplay" class="glass-panel stats-box">Veriler yükleniyor...</div>
-        <button id="btnVoiceToggle" class="btn-secondary">🎤 Sesli Yanıt: KAPALI</button>
-        <button id="btnStartGame" class="btn-primary">Korta Çık</button>
+        <button id="btnVoiceToggle" class="btn-secondary" style="margin-top: 5px;">🎤 Sesli Yanıt: KAPALI</button>
+        <button id="btnStartGame" class="btn-primary" style="margin-top: 5px; margin-bottom: 20px;">Korta Çık</button>
     </div>
 
     <div id="examIntroScreen" class="screen exam-intro">
         <div class="exam-title">🚨 LGS ARENASI 🚨</div>
-        <h2 id="examName" style="color:var(--streak-color); font-size: 26px;">1. ARENA</h2>
+        <h2 id="examName" style="color:var(--streak-color); font-size: clamp(20px, 6vw, 26px); padding: 0 10px; word-wrap: break-word; line-height: 1.3;">1. ARENA</h2>
         <div class="glass-panel exam-desc" id="examDesc">Açıklama yükleniyor...</div>
         <button id="btnStartExam" class="btn-primary" style="background-color: var(--timer-critical); box-shadow: 0 0 20px rgba(226,75,74,0.5);">Savaşa Başla</button>
     </div>
@@ -175,10 +176,13 @@
     <div id="gameScreen" class="screen">
         <div class="game-header">
             <div class="header-top">
-                <div><div class="timer" id="timerDisplay">⏱ 60</div><div id="stageDisplay" style="color:#888; font-size:13px;">Set 1</div></div>
-                <div style="text-align:right;">
-                    <div class="score" id="scoreDisplay">🔥 0</div>
-                    <div style="color:#aaa; font-size:11px;">Hedef: <span id="targetText">15</span></div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <div class="timer" id="timerDisplay" style="font-size: 22px;">⏱ 60</div>
+                    <div id="stageDisplay" style="color:#888; font-size:13px; margin-top: 2px;">Set 1</div>
+                </div>
+                <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end;">
+                    <div class="score" id="scoreDisplay" style="font-size: 22px;">🔥 0</div>
+                    <div style="color:#aaa; font-size:11px; margin-top: 2px;">Hedef: <span id="targetText">15</span></div>
                 </div>
             </div>
             <div class="progress-container">
@@ -214,7 +218,7 @@
         <div class="glass-panel lgs-message" id="lgsMessage"></div>
         
         <div id="rewardContainer" class="reward-container"></div>
-        <button id="btnNextStage" class="btn-primary" style="margin-top:20px;">Sıradaki Set</button>
+        <button id="btnNextStage" class="btn-primary" style="margin-top:15px; margin-bottom: 20px;">Sıradaki Set</button>
     </div>
 
     <script>
@@ -307,7 +311,6 @@
             function renderDashboardUI() {
                 var textDiv = document.getElementById('streakText');
                 var todaySets = streakData.setsToday || 0;
-                
                 var nextOpen = (streakData.opensToday || 0) + 1; 
                 
                 var html = "🔥 Efsanevi Seri: <span style='color:var(--streak-color); font-weight:bold;'>" + (streakData.streakCount || 0) + " Gün</span><br>";
@@ -1070,12 +1073,12 @@
 
                 if (currentStage < 3) {
                     statsHtml += "<span style='color:#aaa;'>Isınma devam ediyor... Dört işleme az kaldı!</span>";
+                    finalMsg = "🎾 <b>Koç diyor ki:</b> \"Harika bir ısınma " + playerName + "! Çarpım tablosunda ne kadar hızlanırsan, arenada o kadar yenilmez olursun. Aynen devam!\"";
                 } else {
                     statsHtml += "AI Tespiti (Zayıf Noktan): <span style='color:var(--timer-critical)'>" + getOpName(calculateWeakestOp()) + "</span>";
+                    var rawMsg = tennisStories[Math.floor(Math.random() * tennisStories.length)];
+                    finalMsg = rawMsg.replace('{isim}', playerName).replace('{weak_info}', getOpName(calculateWeakestOp()));
                 }
-                
-                var rawMsg = tennisStories[Math.floor(Math.random() * tennisStories.length)];
-                finalMsg = rawMsg.replace('{isim}', playerName).replace('{weak_info}', getOpName(calculateWeakestOp()));
                 
                 document.getElementById('passedStageDisplay').innerHTML = statsHtml;
                 document.getElementById('lgsMessage').innerHTML = finalMsg;
