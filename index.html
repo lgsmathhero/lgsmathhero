@@ -805,19 +805,22 @@
                         document.getElementById('questionDisplay').innerText = currentQuestionText;
                         questionStartTime = new Date().getTime();
                         
-                    } else if (currentExam === 2) { 
-                        var a = Math.floor(Math.random()*20) + 40; 
-                        var b = Math.floor(Math.random()*10) + 9; 
-                        var exact = a * b; 
-                        expectedAnswer = Math.round(exact / 50) * 50; 
+             } else if (currentExam === 2) { 
+                        // 2. ARENA: KESKİN NİŞANCI (Net Çarpım Sonucu)
+                        var a = Math.floor(Math.random()*20) + 40; // 40-59 arası
+                        var b = Math.floor(Math.random()*10) + 9;  // 9-18 arası
                         
-                        var w1 = expectedAnswer + 50;
-                        var w2 = expectedAnswer - 50;
-                        if (Math.random() > 0.5) w2 = expectedAnswer + 100;
+                        // Doğrudan net sonucu hesapla
+                        expectedAnswer = a * b; 
+                        
+                        // Şaşırtıcı şıkları üret (Sadece son basamağa bakıp uyanıklık yapamasın diye 10 altı/üstü)
+                        var w1 = expectedAnswer + 10;
+                        var w2 = expectedAnswer - 10;
                         
                         var opts = [expectedAnswer, w1, w2].sort(function() { return Math.random() - 0.5; });
                         
-                        currentQuestionText = a + " x " + b + " ≈ ?";
+                        // Yaklaşık işareti yerine Eşittir kullanıyoruz
+                        currentQuestionText = a + " x " + b + " = ?";
                         document.getElementById('questionDisplay').innerText = currentQuestionText;
                         
                         var snipDiv = document.getElementById('sniperOptions');
@@ -829,7 +832,7 @@
                         lastOp = '×';
                         questionStartTime = new Date().getTime();
                         
-                    } else if (currentExam === 3) { 
+                    } else if (currentExam === 3) {
                         isKeyboardLocked = true; 
                         var a = Math.floor(Math.random()*30)+15; 
                         var b = Math.floor(Math.random()*20)+10; 
