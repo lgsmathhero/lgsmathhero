@@ -3,1402 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Kusursuz Sürüm v13.3</title>
+    <title>Math Hero LGS - Kamp Modu v15</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-        /* HATA ÇÖZÜMÜ: Tüm elementlere Kutu Modeli (Border-Box) kuralı eklendi */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; }
         :root {
             --bg-color: #0D0D14; --text-color: #FFFFFF; --timer-normal: #5DCAA5;
             --timer-critical: #E24B4A; --correct-flash: #1D9E75; --wrong-flash: #E24B4A;
-            --spam-flash: #EF9F27; --key-bg: rgba(26, 26, 46, 0.8); --key-disabled: #08080C;
-            --streak-color: #EF9F27; --tennis-color: #DFFF00;
+            --spam-flash: #EF9F27; --key-bg: rgba(26, 26, 46, 0.8); --streak-color: #EF9F27; --tennis-color: #DFFF00;
         }
-        
-        html, body { 
-            position: fixed; width: 100%; /* 100vw yerine 100% kullanıldı */
-            height: 100vh; height: 100dvh;
-            overflow: hidden; touch-action: none; 
-            margin: 0; padding: 0; 
-            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; 
-        }
-        
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; transition: background-color 0.15s ease-out, box-shadow 0.3s ease-in-out; transform: translate3d(0,0,0); }
+        html, body { position: fixed; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; transition: background-color 0.15s; }
         body.flash-correct { background-color: var(--correct-flash); }
         body.flash-wrong { background-color: var(--wrong-flash); }
         body.flash-spam { background-color: var(--spam-flash); }
-        body.fever-mode { box-shadow: inset 0 0 40px var(--streak-color); }
         
-        .fever-text { color: var(--streak-color); font-weight: bold; font-size: 14px; animation: pulse 0.5s infinite; text-shadow: 0 0 10px var(--streak-color); margin-left: 5px; }
-
-        .screen { 
-            display: none; flex-direction: column; width: 100%; /* 100vw yerine 100% kullanıldı */
-            height: 100dvh; 
-            padding: max(env(safe-area-inset-top), 45px) 15px max(env(safe-area-inset-bottom), 20px) 15px; 
-            text-align: center; position: relative; 
-            overflow-y: auto; overflow-x: hidden; 
-        }
+        .screen { display: none; flex-direction: column; width: 100%; height: 100dvh; padding: max(env(safe-area-inset-top), 40px) 15px max(env(safe-area-inset-bottom), 20px) 15px; text-align: center; position: relative; overflow-y: auto; overflow-x: hidden; }
         .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
         
-        #startScreen, #transitionScreen, #examIntroScreen { justify-content: flex-start; align-items: center; gap: 12px; }
-        #gameScreen { justify-content: space-between; align-items: center; padding-top: max(env(safe-area-inset-top), 40px); }
+        #startScreen, #transitionScreen, #mapScreen, #theoryScreen { justify-content: flex-start; align-items: center; gap: 12px; }
+        #gameScreen { justify-content: space-between; align-items: center; padding-top: max(env(safe-area-inset-top), 30px); }
         
-        .title { font-size: clamp(24px, 8vw, 38px); font-weight: bold; color: var(--timer-normal); z-index: 10; cursor: pointer; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
+        .title { font-size: clamp(24px, 8vw, 36px); font-weight: bold; color: var(--timer-normal); z-index: 10; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
+        .rank-display { font-size: 13px; color: var(--tennis-color); font-weight: bold; padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(223, 255, 0, 0.3); background: rgba(223, 255, 0, 0.05); }
+        .input-name { font-size: 18px; padding: 10px 15px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); color: white; text-align: center; width: 80%; max-width: 300px; outline:none; }
         
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            width: 90%; max-width: 400px;
-        }
-
-        .rank-display { font-size: 13px; color: var(--tennis-color); font-weight: bold; padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(223, 255, 0, 0.3); background: rgba(223, 255, 0, 0.05); z-index: 10;}
-
-        .streak-box {
-            font-size: 13px; font-weight: bold; padding: 10px 15px; z-index: 10;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; 
-        }
-
-        .badges-container { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 90%; max-width: 400px; z-index: 10;}
-        .badge { font-size: 11px; font-weight: bold; padding: 5px 8px; background: rgba(255,255,255,0.05); border-radius: 12px; color: #666; border: 1px solid #333; transition: all 0.3s; }
-        .badge.earned { background: rgba(239, 159, 39, 0.2); color: var(--streak-color); border: 1px solid var(--streak-color); box-shadow: 0 0 8px rgba(239, 159, 39, 0.4); }
-
-        .input-name { font-size: 18px; padding: 10px 15px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); color: white; text-align: center; outline: none; width: 80%; max-width: 300px; z-index: 10; transition: border-color 0.3s; }
-        .input-name:focus { border-color: var(--timer-normal); }
-        
-        .stats-box { font-size: 13px; color: #E8E8E8; z-index: 10; padding: 10px 15px; text-align: left; line-height: 1.4; border-left: 4px solid var(--timer-normal); }
-        
-        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 20px; font-weight: bold; padding: 14px 30px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; z-index: 10; touch-action: manipulation; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); width: 80%; max-width: 300px; flex-shrink: 0;}
+        .btn-primary { background-color: var(--correct-flash); color: white; font-size: 18px; font-weight: bold; padding: 14px 20px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(29, 158, 117, 0.3); width: 80%; max-width: 300px; margin-top:5px; }
         .btn-primary:active { transform: scale(0.95); }
+        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top:5px; width: 80%; max-width: 300px;}
         
-        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: background-color 0.2s; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); width: auto;}
-        .btn-secondary:active { background-color: rgba(255,255,255,0.2); }
+        /* HARİTA (MAP) EKRANI STİLLERİ */
+        .map-container { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 30px 0; width: 100%; position: relative; margin-top: 10px; }
+        .map-node { width: 70px; height: 70px; border-radius: 50%; background: #222; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 4px solid #444; position: relative; z-index: 2; transition: transform 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+        .map-node.unlocked { background: var(--streak-color); border-color: #fff; cursor: pointer; box-shadow: 0 0 20px rgba(239, 159, 39, 0.6); animation: floatNode 3s infinite ease-in-out; }
+        .map-node.locked { opacity: 0.6; filter: grayscale(100%); }
+        .map-line { position: absolute; width: 6px; height: 40px; background: #444; z-index: 1; bottom: -40px; left: calc(50% - 3px); border-radius: 3px; }
+        .node-title { position: absolute; bottom: -28px; font-size: 13px; white-space: nowrap; color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000; }
         
-        .game-header { width: 100%; display: flex; flex-direction: column; padding: 0 10px; z-index: 5; flex-shrink: 0;}
-        .header-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; font-size: 16px; font-weight: bold; }
+        /* SOYUNMA ODASI (TEORİ) STİLLERİ */
+        .theory-card { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 16px; border-left: 5px solid var(--tennis-color); text-align: left; line-height: 1.5; font-size: 15px; margin-bottom: 20px; width: 90%; max-width: 400px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .theory-header { color: var(--tennis-color); font-size: 18px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
         
-        .progress-container { width: 100%; height: 6px; background-color: rgba(0,0,0,0.3); border-radius: 3px; margin-top: 15px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-bar { height: 100%; width: 0%; position: absolute; top: 0; left: 0; border-radius: 3px; }
-        .progress-bar.ghost { background-color: #444; z-index: 1; transition: width 1s linear; }
-        .progress-bar.actual { background-color: var(--streak-color); z-index: 2; transition: width 0.3s ease-out; box-shadow: 0 0 10px var(--streak-color); }
+        .progress-container { width: 100%; height: 6px; background-color: rgba(0,0,0,0.3); border-radius: 3px; position: relative; overflow: hidden; }
+        .progress-bar { height: 100%; position: absolute; top: 0; left: 0; border-radius: 3px; transition: width 0.3s; }
+        .progress-bar.ghost { background-color: #444; z-index: 1; }
+        .progress-bar.actual { background-color: var(--streak-color); z-index: 2; }
         
-        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; z-index: 5; min-height: 150px;}
+        .game-header { width: 100%; padding: 0 10px; z-index: 5; }
+        .arena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
+        .question { font-size: clamp(40px, 12vw, 56px); font-weight: bold; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .answer-input { font-size: clamp(40px, 12vw, 56px); height: 65px; min-width: 120px; border-bottom: 3px solid rgba(255,255,255,0.2); text-align: center; color: var(--timer-normal); }
+        .answer-input.text-wrong { color: var(--wrong-flash) !important; border-bottom-color: var(--wrong-flash); }
         
-        .mic-indicator { position: absolute; top: 10px; color: var(--timer-critical); font-size: 14px; font-weight: bold; animation: pulse 1.5s infinite; display: none; }
-        
-        .question { font-size: clamp(40px, 12vw, 56px); font-weight: bold; margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .answer-input { font-size: clamp(40px, 12vw, 56px); height: 65px; min-width: 120px; border-bottom: 3px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 5px; color: var(--timer-normal); transition: color 0.1s; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4); }
-        .answer-input.text-wrong { color: var(--wrong-flash) !important; text-shadow: 0 0 15px rgba(226, 75, 74, 0.6); border-bottom-color: var(--wrong-flash); }
-        
-        .bottom-controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: max(env(safe-area-inset-bottom), 10px); flex-shrink: 0; margin-top: 10px;}
-        
-        .btn-pass { background-color: rgba(239, 159, 39, 0.1); color: var(--spam-flash); font-size: 15px; font-weight: bold; padding: 12px 0; border: 1px solid rgba(239, 159, 39, 0.3); border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; width: 100%; touch-action: manipulation; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);}
-        .btn-pass:active { background-color: rgba(239, 159, 39, 0.3); transform: scale(0.98); }
-
-        .keyboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
-        .key { background-color: var(--key-bg); color: var(--text-color); font-size: 24px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; height: 8vh; min-height: 50px; max-height: 70px; display: flex; align-items: center; justify-content: center; touch-action: manipulation; box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.05s, background-color 0.1s; }
+        .keyboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width:400px; margin-top:auto; padding-bottom:10px; }
+        .key { background-color: var(--key-bg); color: white; font-size: 24px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; height: 8vh; min-height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .key:active { transform: scale(0.92); background-color: rgba(255,255,255,0.1); }
         
-        #coachPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; background: rgba(13, 13, 20, 0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: max(env(safe-area-inset-top), 50px) 15px 15px 15px; }
-        #chartContainer { width: 100%; max-width: 600px; height: 40vh; min-height: 250px; background: rgba(26, 26, 46, 0.5); border-radius: 16px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-        
-        .lgs-message { font-size: 14px; color: #E8E8E8; font-style: italic; line-height: 1.4; padding: 12px; border-left: 4px solid var(--tennis-color); margin-top: 10px;}
-        .mistakes-box { font-size: 13px; color: #E8E8E8; line-height: 1.4; padding: 12px; border-left: 4px solid var(--timer-critical); display: none; text-align: left;}
-        
-        .reward-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; align-items: center; margin-top: 10px;}
-        .btn-reward { background-color: var(--streak-color); color: #111; font-size: 13px; font-weight: bold; padding: 10px 12px; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s; }
-        .btn-reward.selected { background-color: var(--correct-flash); color: white; border: 2px solid white; }
-        .btn-reward.disabled { opacity: 0.4; pointer-events: none; background-color: #555; color: #aaa; }
-
-        @keyframes alarm { 0% { background-color: #2b0a0a; } 50% { background-color: #1a0505; } 100% { background-color: #2b0a0a; } }
-        .exam-intro { animation: alarm 1.5s infinite; justify-content: center; gap: 20px;}
-        .exam-title { color: var(--timer-critical); font-size: clamp(28px, 8vw, 36px); font-weight: bold; text-shadow: 0 0 20px var(--timer-critical); }
-        .exam-desc { color: #ddd; font-size: 15px; width: 90%; max-width: 400px; line-height: 1.5; padding: 20px;}
-
-        @keyframes floatUp { 0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } 100% { opacity: 0; transform: translate3d(0, -50px, 0) scale(1.3); } }
-        .floating-text { position: absolute; font-weight: bold; font-size: 22px; pointer-events: none; z-index: 9999; animation: floatUp 0.8s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+        @keyframes floatNode { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="toast" id="toastMsg" style="position:fixed; top:10%; left:50%; transform:translateX(-50%); background:rgba(239,159,39,0.95); padding:10px 20px; border-radius:12px; opacity:0; z-index:10000; transition:opacity 0.3s; pointer-events:none; font-weight:bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">Odaklan! 🎯</div>
-
-    <div id="coachPanel">
-        <h2 style="color:var(--timer-normal); margin-bottom:5px;">📊 LGS Performans Analizi</h2>
-        <p style="color:#aaa; font-size:12px; margin-bottom:15px;">Son 20 setin soru başı hızları (Barlar düşükse daha iyi)</p>
-        <div id="chartContainer"></div>
-        <button class="btn-secondary" onclick="document.getElementById('coachPanel').style.display='none'" style="padding: 12px 30px; font-size:16px;">Paneli Kapat</button>
-    </div>
-
+    <!-- ANA EKRAN -->
     <div id="startScreen" class="screen active">
-        <div class="title" id="mainTitle">Math Hero LGS</div>
-        <div id="rankDisplay" class="rank-display">🏆 Yükleniyor...</div>
-        
-        <div class="glass-panel streak-box" style="flex-direction: column; gap: 8px;">
-            <div style="font-size:15px; color:var(--timer-normal); font-weight:bold;">🏆 Büyük Hedef: Profesyonel Raket</div>
-            <div class="progress-container" style="margin-top:0; height: 10px; width: 100%;">
-                <div class="progress-bar actual" id="racketProgressBar" style="width: 0%; background-color: var(--tennis-color); box-shadow: 0 0 10px var(--tennis-color); transition: width 0.5s ease-out;"></div>
-            </div>
-            <div style="font-size:14px; color:#ddd; font-weight:bold;">
-                Rakete Son <span id="racketLeftCount" style="color:var(--timer-critical); font-size:16px;">500</span> Set! 
-                <span style="font-size:12px; color:#aaa; font-weight:normal;">(<span id="racketSetCount">0</span>/500)</span>
-            </div>
-            <div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin: 2px 0;"></div>
-            <div id="streakText" style="font-size:13px; color:#ccc; line-height:1.5;">🔥 Yükleniyor...</div>
-        </div>
-        
-        <div class="badges-container" id="badgesContainer">
-            <span class="badge" id="badge1">🕵️ Kayıp Halka</span>
-            <span class="badge" id="badge2">🎯 Nişancı</span>
-            <span class="badge" id="badge3">⚡ Flaş</span>
-            <span class="badge" id="badge4">🌩️ Şimşek</span>
-        </div>
-        
+        <div class="title">Math Hero LGS</div>
+        <div class="rank-display">🏆 Kariyer Modu v15</div>
         <input type="text" id="playerNameInput" class="input-name" placeholder="Oyuncu Adı..." />
-        <div id="statsDisplay" class="glass-panel stats-box">Veriler yükleniyor...</div>
-        <button id="btnVoiceToggle" class="btn-secondary" style="margin-top: 5px;">🎤 Sesli Yanıt: KAPALI</button>
-        <button id="btnStartGame" class="btn-primary" style="margin-top: 5px; margin-bottom: 20px;">Korta Çık</button>
+        
+        <div class="glass-panel" style="padding:15px; text-align:left; font-size:14px; margin-top:10px;">
+            <b style="color:var(--timer-normal)">Yeni: LGS Kampı Aktif!</b><br>
+            <span style="color:#ccc">Artık sadece refleks değil, yeni nesil soru çözümü için LGS konularında ilerleyeceksin.</span>
+        </div>
+
+        <button id="btnOpenMap" class="btn-primary" style="background-color: var(--streak-color); color: #111; box-shadow: 0 0 20px rgba(239,159,39,0.4); margin-top: 20px;">🗺️ LGS Kampına Gir</button>
+        <button id="btnStartFreeMode" class="btn-secondary">⚡ Serbest Antrenman (Eski Mod)</button>
     </div>
 
-    <div id="examIntroScreen" class="screen exam-intro">
-        <div class="exam-title">🚨 LGS ARENASI 🚨</div>
-        <h2 id="examName" style="color:var(--streak-color); font-size: clamp(20px, 6vw, 26px); padding: 0 10px; word-wrap: break-word; line-height: 1.3;">1. ARENA</h2>
-        <div class="glass-panel exam-desc" id="examDesc">Açıklama yükleniyor...</div>
-        <button id="btnStartExam" class="btn-primary" style="background-color: var(--timer-critical); box-shadow: 0 0 20px rgba(226,75,74,0.5);">Savaşa Başla</button>
+    <!-- HARİTA (MAP) EKRANI -->
+    <div id="mapScreen" class="screen">
+        <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center;">
+            <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('startScreen')">🔙 Geri</button>
+            <div style="color:var(--streak-color); font-weight:bold; font-size:18px;">LGS YOL HARİTASI</div>
+        </div>
+        
+        <div class="map-container">
+            <!-- Modül 1 (Açık) -->
+            <div class="map-node unlocked" onclick="openTheory(1)">
+                1
+                <div class="map-line"></div>
+                <div class="node-title">Çarpanlar ve Katlar</div>
+            </div>
+            
+            <!-- Modül 2 (Kilitli) -->
+            <div class="map-node locked" onclick="showToastMessage('Önce 1. Modülü tamamlamalısın!')">
+                🔒
+                <div class="map-line"></div>
+                <div class="node-title">Üslü Sayılar</div>
+            </div>
+            
+            <!-- Modül 3 (Kilitli) -->
+            <div class="map-node locked" onclick="showToastMessage('Kilitli!')">
+                🔒
+                <div class="node-title">Kareköklü Sayılar</div>
+            </div>
+        </div>
     </div>
 
+    <!-- SOYUNMA ODASI (TEORİ) EKRANI -->
+    <div id="theoryScreen" class="screen">
+        <div class="title" style="font-size:24px; color:var(--timer-normal);">SOYUNMA ODASI</div>
+        
+        <div class="theory-card">
+            <div class="theory-header">🎾 Koçun Taktik Tahtası</div>
+            <p><b style="color:#fff">Konu:</b> Çarpanlar, Katlar ve Asal Sayılar</p>
+            <p>LGS'de EBOB/EKOK soruları genellikle uzun hikayelerle gelir (Örn: fayans döşeme, nöbet tutma).</p>
+            <p><b style="color:var(--timer-critical)">Altın Kural:</b> Bütünden parçaya gidiyorsan (kesme, paylaştırma) <b style="color:var(--timer-normal)">EBOB</b>. Parçadan bütüne gidiyorsan (aynı anda zil çalma) <b style="color:var(--timer-normal)">EKOK</b> kullanırsın.</p>
+            <p style="color:#aaa; font-size:13px; margin-top:15px;"><i>Görev: Önce antrenman kortunda işlem reflekslerini ısıtacağız, sonra yeni nesil soru maçına çıkacaksın.</i></p>
+        </div>
+        
+        <button id="btnStartModuleGame" class="btn-primary" style="background-color: var(--tennis-color); color: #111;">Korta Çık (Antrenman)</button>
+        <button class="btn-secondary" onclick="switchScreen('mapScreen')">Haritaya Dön</button>
+    </div>
+
+    <!-- OYUN / ANTRENMAN EKRANI -->
     <div id="gameScreen" class="screen">
         <div class="game-header">
-            <div class="header-top">
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <div class="timer" id="timerDisplay" style="font-size: 22px;">⏱ 60</div>
-                    <div id="stageDisplay" style="color:#888; font-size:13px; margin-top: 2px;">Set 1</div>
-                </div>
-                <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end;">
-                    <div class="score" id="scoreDisplay" style="font-size: 22px;">🔥 0</div>
-                    <div style="color:#aaa; font-size:11px; margin-top: 2px;">Hedef: <span id="targetText">15</span></div>
-                </div>
+            <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold;">
+                <div id="timerDisplay">⏱ 60</div>
+                <div id="scoreDisplay">🔥 0</div>
             </div>
-            <div class="progress-container">
-                <div class="progress-bar ghost" id="ghostBar"></div>
-                <div class="progress-bar actual" id="progressBar"></div>
+            <div class="progress-container" style="margin-top: 10px;">
+                <div class="progress-bar ghost" id="ghostBar" style="width:0%"></div>
+                <div class="progress-bar actual" id="progressBar" style="width:0%"></div>
             </div>
         </div>
         
         <div class="arena">
-            <div id="micIndicator" class="mic-indicator">🎙️ Dinleniyor...</div>
-            <div id="aiAnalysisDisplay" style="color:var(--tennis-color); font-size:13px; margin-bottom:5px; font-weight:bold;">Sistem Yükleniyor...</div>
+            <div id="aiAnalysisDisplay" style="color:var(--timer-normal); font-size:14px; margin-bottom:10px;">Antrenman Başlıyor...</div>
             <div class="question" id="questionDisplay">?</div>
             <div class="answer-input" id="answerDisplay"></div>
-            <div id="sniperOptions" style="display:none; gap:10px; margin-top:15px; width:100%; max-width:400px; justify-content:space-between;"></div>
         </div>
         
-        <div class="bottom-controls">
-            <button id="btnPass" class="btn-pass glass-panel">⏭️ Pas Geç (Ses: "Geç")</button>
-            <div class="keyboard-grid">
-                <button class="key num-key" data-val="1">1</button><button class="key num-key" data-val="2">2</button><button class="key num-key" data-val="3">3</button>
-                <button class="key num-key" data-val="4">4</button><button class="key num-key" data-val="5">5</button><button class="key num-key" data-val="6">6</button>
-                <button class="key num-key" data-val="7">7</button><button class="key num-key" data-val="8">8</button><button class="key num-key" data-val="9">9</button>
-                <button class="key num-key" data-val="C">C</button><button class="key num-key" data-val="0">0</button><button class="key num-key" data-val="⌫">⌫</button>
-            </div>
+        <div class="keyboard-grid">
+            <button class="key" onclick="pressKey('1')">1</button><button class="key" onclick="pressKey('2')">2</button><button class="key" onclick="pressKey('3')">3</button>
+            <button class="key" onclick="pressKey('4')">4</button><button class="key" onclick="pressKey('5')">5</button><button class="key" onclick="pressKey('6')">6</button>
+            <button class="key" onclick="pressKey('7')">7</button><button class="key" onclick="pressKey('8')">8</button><button class="key" onclick="pressKey('9')">9</button>
+            <button class="key" onclick="pressKey('C')">C</button><button class="key" onclick="pressKey('0')">0</button><button class="key" onclick="pressKey('⌫')">⌫</button>
         </div>
     </div>
 
-    <div id="transitionScreen" class="screen">
-        <div class="title" id="transTitle" style="color:var(--timer-normal);">🎯 SET BİTTİ</div>
-        <div id="passedStageDisplay" style="font-size:14px; color:#ddd;"></div>
-        
-        <div id="mistakesDisplay" class="glass-panel mistakes-box"></div>
-        <div class="glass-panel lgs-message" id="lgsMessage"></div>
-        
-        <div id="rewardContainer" class="reward-container"></div>
-        <button id="btnNextStage" class="btn-primary" style="margin-top:15px; margin-bottom: 20px;">Sıradaki Set</button>
-    </div>
+    <div class="toast" id="toastMsg" style="position:fixed; top:10%; left:50%; transform:translateX(-50%); background:rgba(239,159,39,0.95); padding:10px 20px; border-radius:12px; opacity:0; z-index:10000; transition:opacity 0.3s; pointer-events:none; font-weight:bold;">Bildirim</div>
 
     <script>
-        (function() {
-            var parentPhoneNumber = "905322771049"; 
-            var api_key = "7794954"; 
+        var playerName = "Ömer";
+        var isCampaignMode = false;
+        var currentCampaignModule = 1;
+        
+        var currentScore = 0;
+        var targetScore = 15;
+        var expectedAnswer = 0;
+        var currentAnswer = "";
+        var timeLeft = 60;
+        var timerInterval;
+
+        function showToastMessage(msg) {
+            var t = document.getElementById('toastMsg');
+            t.innerText = msg;
+            t.style.opacity = 1;
+            setTimeout(function() { t.style.opacity = 0; }, 2000);
+        }
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // Ana Menü Butonları
+        document.getElementById('btnOpenMap').onclick = function() {
+            var inp = document.getElementById('playerNameInput').value.trim();
+            if(inp) playerName = inp;
+            switchScreen('mapScreen');
+        };
+
+        document.getElementById('btnStartFreeMode').onclick = function() {
+            isCampaignMode = false;
+            startGame();
+        };
+
+        // Haritadan Teoriye Geçiş
+        window.openTheory = function(moduleId) {
+            currentCampaignModule = moduleId;
+            switchScreen('theoryScreen');
+        };
+
+        // Teoriden Antrenmana Geçiş
+        document.getElementById('btnStartModuleGame').onclick = function() {
+            isCampaignMode = true;
+            startGame();
+        };
+
+        function startGame() {
+            switchScreen('gameScreen');
+            currentScore = 0;
+            timeLeft = 60;
+            document.getElementById('progressBar').style.width = "0%";
+            generateQuestion();
             
-            var storageVersion = "_v13"; 
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timerDisplay').innerText = "⏱ " + timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showToastMessage("Süre Doldu!");
+                    setTimeout(() => switchScreen(isCampaignMode ? 'mapScreen' : 'startScreen'), 1500);
+                }
+            }, 1000);
+        }
+
+        function generateQuestion() {
+            currentAnswer = "";
+            document.getElementById('answerDisplay').innerText = "";
+            document.getElementById('answerDisplay').classList.remove('text-wrong');
             
-            var playerName = "Ömer";
-            var currentStage = 1;
-            var targetScore = 15;
-            var currentScore = 0;
-            var currentAnswer = "";
-            var expectedAnswer = 0;
-            var currentQuestionText = ""; 
-            var timeLeft = 60;
-            var timerInterval;
-            var questionStartTime = 0;
-            var isKeyboardLocked = false;
-            var extraBonusTime = 0;
-            var setResponseTimes = [];
+            // Eğer kamp modundaysa ve 1. Modüldeyse Çarpma/Bölme ağırlıklı sor
+            var opList = (isCampaignMode && currentCampaignModule === 1) ? ['×', '÷'] : ['+', '-', '×', '÷'];
+            var op = opList[Math.floor(Math.random() * opList.length)];
+            var num1, num2;
             
-            var comboCount = 0;
-            var currentSetMistakes = []; 
-            var wrongAnswerTimeout = null;
+            if (op === '×') { num1 = Math.floor(Math.random()*9)+2; num2 = Math.floor(Math.random()*9)+2; expectedAnswer = num1 * num2; }
+            else if (op === '÷') { num2 = Math.floor(Math.random()*8)+2; expectedAnswer = Math.floor(Math.random()*8)+2; num1 = num2 * expectedAnswer; }
+            else if (op === '+') { num1 = Math.floor(Math.random()*40)+10; num2 = Math.floor(Math.random()*40)+10; expectedAnswer = num1 + num2; }
+            else { num1 = Math.floor(Math.random()*50)+20; num2 = Math.floor(Math.random()*20)+5; expectedAnswer = num1 - num2; }
             
-            var ghostStartTime = 0;
-            var ghostTotalTime = 0; 
+            var opSign = (op === '×') ? 'x' : op;
+            document.getElementById('questionDisplay').innerText = num1 + " " + opSign + " " + num2;
             
-            var playerXP = parseInt(localStorage.getItem('mathHeroXP' + storageVersion)) || 0;
-            var totalSetsCompleted = parseInt(localStorage.getItem('mathHeroTotalSets' + storageVersion)) || 0;
+            var modText = isCampaignMode ? ("Modül " + currentCampaignModule + " Antrenmanı") : "Serbest Antrenman";
+            document.getElementById('aiAnalysisDisplay').innerText = modText;
+        }
+
+        window.pressKey = function(val) {
+            var ansDisp = document.getElementById('answerDisplay');
+            ansDisp.classList.remove('text-wrong');
             
-            var isExamMode = false;
-            var currentExam = 0;
-            var earnedBadges = JSON.parse(localStorage.getItem('mathHeroBadges' + storageVersion)) || {1:false, 2:false, 3:false, 4:false};
+            if (val === 'C') { currentAnswer = ""; ansDisp.innerText = ""; }
+            else if (val === '⌫') { currentAnswer = currentAnswer.slice(0, -1); ansDisp.innerText = currentAnswer; }
+            else if (currentAnswer.length < 4) { currentAnswer += val; ansDisp.innerText = currentAnswer; }
             
-            var streakData = { lastPlayedDate: "", setsToday: 0, streakCount: 0, lastStreakDate: "", opensToday: 0 };
-            try {
-                var localStreak = localStorage.getItem('mathHeroStreak' + storageVersion);
-                if (localStreak) streakData = JSON.parse(localStreak);
-            } catch(e) {}
-
-            var currentDailySession = 1;
-
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            var recognition = null;
-            var isVoiceMode = false;
-            var persistentStream = null;
-            var lastCorrectResultIndex = -1;
-            var isRecognizing = false;
-
-            var audioCtx = null;
-            
-            function getTodayStr() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
-            function getYesterdayStr() { var d = new Date(); d.setDate(d.getDate() - 1); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
-
-            function initStreakOnLoad() {
-                var todayStr = getTodayStr();
-                if (streakData.lastPlayedDate !== todayStr) {
-                    streakData.setsToday = 0;
-                    streakData.opensToday = 0;
-                    streakData.lastPlayedDate = todayStr;
-                    try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
-                }
-            }
-
-            function updateStreakLogic(setCompleted) {
-                var todayStr = getTodayStr();
-                var yesterdayStr = getYesterdayStr();
-
-                if (streakData.lastStreakDate !== todayStr && streakData.lastStreakDate !== yesterdayStr && streakData.lastStreakDate !== "") {
-                    streakData.streakCount = 0; 
-                }
-
-                if (setCompleted) {
-                    streakData.setsToday++;
-                    if (streakData.setsToday >= 5 && streakData.lastStreakDate !== todayStr) {
-                        streakData.streakCount++;
-                        streakData.lastStreakDate = todayStr;
-                        showToastMessage("🔥 GÜNLÜK HEDEF TAMAMLANDI! Seri: " + streakData.streakCount + " Gün", true);
-                        addXP(200); 
-                    }
-                }
-
-                try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
-                renderDashboardUI();
-            }
-
-            function renderDashboardUI() {
-                var textDiv = document.getElementById('streakText');
-                var todaySets = streakData.setsToday || 0;
-                var nextOpen = (streakData.opensToday || 0) + 1; 
-                
-                var html = "🔥 Efsanevi Seri: <span style='color:var(--streak-color); font-weight:bold;'>" + (streakData.streakCount || 0) + " Gün</span><br>";
-                html += "📅 Bugün Çözülen: <span style='color:white;'>" + todaySets + " Set</span><br>";
-                html += "🔄 Sıradaki Giriş: <span style='color:var(--timer-normal);'>" + nextOpen + ". Oturum</span>";
-                
-                if (textDiv) textDiv.innerHTML = html;
-            }
-
-            function updateRacketProgress() {
-                var pct = (totalSetsCompleted / 500) * 100;
-                if (pct > 100) pct = 100;
-                var bar = document.getElementById('racketProgressBar');
-                if(bar) bar.style.width = pct + '%';
-                var txt = document.getElementById('racketSetCount');
-                if(txt) txt.innerText = totalSetsCompleted;
-                var leftTxt = document.getElementById('racketLeftCount');
-                if(leftTxt) leftTxt.innerText = Math.max(0, 500 - totalSetsCompleted);
-            }
-
-            initStreakOnLoad();
-            updateStreakLogic(false);
-            updateRacketProgress();
-
-            function initAudio() {
-                if (!audioCtx) {
-                    var AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if(AudioContext) { audioCtx = new AudioContext(); }
-                }
-                if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
-            }
-
-            function playTone(freq, type, duration, vol) {
-                if (!audioCtx) return;
-                var osc = audioCtx.createOscillator();
-                var gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            }
-
-            function playCorrectSound() { playTone(600, 'sine', 0.1, 0.3); setTimeout(function(){ playTone(800, 'sine', 0.15, 0.3); }, 100); }
-            function playWrongSound() { playTone(150, 'sawtooth', 0.3, 0.3); }
-            function playComboSound() { playTone(400, 'square', 0.1, 0.2); setTimeout(function(){ playTone(600, 'square', 0.1, 0.2); }, 100); setTimeout(function(){ playTone(800, 'square', 0.2, 0.3); }, 200); }
-            function playTickSound() { playTone(1000, 'triangle', 0.05, 0.1); }
-            
-            function playSiren() {
-                if (!audioCtx) return;
-                var osc = audioCtx.createOscillator();
-                var gain = audioCtx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-                osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 1.0);
-                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 1.5);
-                osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 2.0);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.0);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 2.0);
-            }
-
-            function playEpicWinSound() {
-                if (!audioCtx) return;
-                playTone(400, 'square', 0.2, 0.3);
-                setTimeout(function(){ playTone(500, 'square', 0.2, 0.3); }, 200);
-                setTimeout(function(){ playTone(600, 'square', 0.2, 0.3); }, 400);
-                setTimeout(function(){ playTone(800, 'square', 0.6, 0.4); }, 600);
-            }
-
-            function createFloatingText(text, targetId, color) {
-                var target = document.getElementById(targetId);
-                if(!target) return;
-                var rect = target.getBoundingClientRect();
-                var el = document.createElement('div');
-                el.className = 'floating-text';
-                el.innerText = text;
-                el.style.left = (rect.left + rect.width / 2 - 20) + 'px';
-                el.style.top = (rect.top - 10) + 'px';
-                el.style.color = color;
-                el.style.textShadow = '0 0 10px ' + color;
-                document.body.appendChild(el);
-                setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 800);
-            }
-
-            function getRankName(xp) {
-                if(xp < 500) return "Toprak Kort Çaylağı";
-                if(xp < 1500) return "Kortların Çaylağı";
-                if(xp < 3000) return "Antrenman Yıldızı";
-                if(xp < 5000) return "Wimbledon Yeteneği";
-                if(xp < 10000) return "Kortların Ustası";
-                return "LGS Şampiyonu 👑";
-            }
-
-            function updateRankDisplay() {
-                document.getElementById('rankDisplay').innerText = "🏆 " + getRankName(playerXP) + " (" + playerXP + " XP)";
-                for(var i=1; i<=4; i++) {
-                    var b = document.getElementById('badge'+i);
-                    if(earnedBadges[i]) b.classList.add('earned');
-                    else b.classList.remove('earned');
-                }
-            }
-
-            function addXP(amount) {
-                playerXP += amount;
-                try { localStorage.setItem('mathHeroXP' + storageVersion, playerXP.toString()); } catch(e) {}
-                updateRankDisplay();
-            }
-
-            var aiStats = { '+': { count: 0, errors: 0, totalTime: 0 }, '-': { count: 0, errors: 0, totalTime: 0 }, '×': { count: 0, errors: 0, totalTime: 0 }, '÷': { count: 0, errors: 0, totalTime: 0 } };
-            try { var localData = localStorage.getItem('mathHeroAIStats' + storageVersion); if (localData) { var parsed = JSON.parse(localData); if (parsed && parsed['+']) { aiStats = parsed; } } } catch(e) {}
-            var lastOp = '×';
-
-            var tennisStories = [
-                "🎾 <b>Rafael Nadal diyor ki:</b> \"Masanın başında asla pes etmemelisin {isim}! Roland Garros'ta kupayı vazgeçmeyenler kaldırır. {weak_info} kısmında fileye takıldın ama bir sonrakine o sayıyı alacağız!\"",
-                "🎾 <b>Roger Federer diyor ki:</b> \"Zerafet sadece pratikle gelir {isim}. {weak_info} konusunda vuruş ritmini ve hızını biraz daha artırmalıyız. Mücadeleyi sakın bırakma!\"",
-                "🎾 <b>Novak Djokovic diyor ki:</b> \"Şampiyonluklar pes etmenin en cazip olduğu o kırılma anlarında kazanılır {isim}. {weak_info} seni biraz yavaşlatmış, hadi odağını zirveye çıkar!\"",
-                "🎾 <b>Carlos Alcaraz diyor ki:</b> \"Kortta hızlı olmak yetmez {isim}, zihnini de süper hızlı çalıştırmalısın! {weak_info} konusunu halledersen seni bu turnuvada kimse durduramaz!\"",
-                "🎾 <b>Jannik Sinner diyor ki:</b> \"Baskı altındayken bile buz gibi soğukkanlı kalmak şampiyonların işidir {isim}. {weak_info} geldiğinde derin bir nefes al ve taktiğini uygula!\"",
-                "🎾 <b>Serena Williams diyor ki:</b> \"Kortta karşı tarafta kimin durduğunun hiçbir önemi yok {isim}, asıl rakibin sensin! {weak_info} antrenmanlarına ağırlık ver ve gücünü göster!\"",
-                "🎾 <b>Venus Williams diyor ki:</b> \"Şampiyon olmak sadece kazanmak değil, her düştüğünde korta daha güçlü dönmektir {isim}. {weak_info} seni yavaşlatmasın, ayağa kalk!\"",
-                "🎾 <b>Naomi Osaka diyor ki:</b> \"Zihinsel güç ve iç huzur her şeydir {isim}. Kortun dışındaki tüm sesleri kapat ve sadece önündeki {weak_info} işlemlerine odaklan!\"",
-                "🎾 <b>Coco Gauff diyor ki:</b> \"Genç yaşta zirveye oynamanın tek bir sırrı var: Her gün herkesten daha fazla çalışmak! {isim}, {weak_info} reflekslerini uçuracağız!\"",
-                "🎾 <b>Iga Swiatek diyor ki:</b> \"Ben kortta her zaman mutlak dominasyon isterim {isim}! {weak_info} kısmında tempoyu sakın kaybetme, rakibe tek bir sayı bile kaptırma!\"",
-                "🎾 <b>Ben Shelton diyor ki:</b> \"O efsanevi servislerin gibi hızlı, patlayıcı ve korkusuz ol {isim}! {weak_info} sorusu geldiğinde direkt ace atar gibi bitir işi!\"",
-                "🎾 <b>Mirra Andreeva diyor ki:</b> \"Genç yaşın getirdiği o harika korkusuzlukla oyna {isim}! {weak_info} seni hiç ürkütmesin, cesurca üzerine git ve korta hükmet!\"",
-                "🎾 <b>Taylor Fritz diyor ki:</b> \"Amerikan ekolünün o sert, kararlı ve güçlü duruşunu zihnine taşı {isim}. {weak_info} setinde artık basit hata istemiyorum!\"",
-                "🎾 <b>Pete Sampras diyor ki:</b> \"Eski toprakların o kusursuz ve net vuruş mantığını hatırla {isim}. {weak_info} konusunda tıpkı servis-vole gibi net, keskin ve bitirici ol!\"",
-                "🎾 <b>Aryna Sabalenka diyor ki:</b> \"Korta o muazzam gücünle ve hırsınla hükmet {isim}! {weak_info} işlemlerini o sert forehandlerinle paramparça et, dağıt ortalığı!\""
-            ];
-
-            function showToastMessage(msg, isSuccess) {
-                var toast = document.getElementById('toastMsg');
-                toast.innerHTML = msg;
-                toast.style.backgroundColor = isSuccess ? "rgba(29, 158, 117, 0.95)" : "rgba(239, 159, 39, 0.95)";
-                toast.style.opacity = 1;
-                setTimeout(function() { toast.style.opacity = 0; }, 2000);
-            }
-
-            var titleClicks = 0;
-            var titleClickTimer = null;
-            document.getElementById('mainTitle').addEventListener('click', function() {
-                titleClicks++;
-                clearTimeout(titleClickTimer);
-                if(titleClicks >= 3) { titleClicks = 0; showCoachPanel(); } 
-                else { titleClickTimer = setTimeout(function() { titleClicks = 0; }, 1000); }
-            });
-
-            function showCoachPanel() {
-                var history = [];
-                try { history = JSON.parse(localStorage.getItem('mathHeroHistory' + storageVersion) || '[]'); } catch(e) {}
-                var panel = document.getElementById('coachPanel');
-                var chartDiv = document.getElementById('chartContainer');
-                
-                if(history.length === 0) {
-                    chartDiv.innerHTML = "<div style='color:#aaa; text-align:center; padding-top:80px;'>Henüz veri yok. İlk seti oynamalısın.</div>";
-                    panel.style.display = 'flex';
-                    return;
-                }
-
-                var data = history.slice(-20); 
-                var maxTime = 4.0; 
-                var svgW = 600, svgH = 300, padBottom = 30, padTop = 30, padLeft = 45, padRight = 80; 
-                var drawW = svgW - padLeft - padRight, drawH = svgH - padBottom - padTop;
-
-                var svg = '<svg width="100%" height="100%" viewBox="0 0 ' + svgW + ' ' + svgH + '" preserveAspectRatio="xMidYMid meet" style="font-family:-apple-system, sans-serif;">';
-
-                var levels = [
-                    { time: 1.5, label: "Çok İyi", color: "#1D9E75" }, { time: 2.0, label: "İyi", color: "#5DCAA5" },
-                    { time: 2.5, label: "Orta", color: "#DFFF00" }, { time: 3.0, label: "Zayıf", color: "#EF9F27" },
-                    { time: 3.5, label: "Kötü", color: "#E24B4A" }
-                ];
-
-                levels.forEach(function(lvl) {
-                    var y = svgH - padBottom - (lvl.time / maxTime) * drawH;
-                    svg += '<line x1="'+padLeft+'" y1="'+y+'" x2="'+(svgW - padRight + 10)+'" y2="'+y+'" stroke="'+lvl.color+'" stroke-width="1" stroke-dasharray="5,5" opacity="0.4"/>';
-                    svg += '<text x="'+(padLeft-8)+'" y="'+(y+4)+'" fill="'+lvl.color+'" font-size="12" text-anchor="end" font-weight="bold">'+lvl.time+'s</text>';
-                    svg += '<text x="'+(svgW - padRight + 15)+'" y="'+(y+4)+'" fill="'+lvl.color+'" font-size="12" font-weight="bold">'+lvl.label+'</text>';
-                });
-
-                svg += '<line x1="'+padLeft+'" y1="'+(svgH - padBottom)+'" x2="'+(svgW - padRight + 10)+'" y2="'+(svgH - padBottom)+'" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>';
-
-                var barSpacing = drawW / (data.length > 0 ? data.length : 1);
-                var barWidth = barSpacing * 0.6;
-                if(barWidth > 25) barWidth = 25;
-
-                for(var j=0; j<data.length; j++) {
-                    var spdVal = parseFloat(data[j].speed);
-                    var displaySpd = spdVal;
-                    if(spdVal > maxTime) spdVal = maxTime; 
-
-                    var h = (spdVal / maxTime) * drawH;
-                    var x = padLeft + (j * barSpacing) + (barSpacing - barWidth) / 2;
-                    var y = svgH - padBottom - h;
-
-                    var barColor = "#E24B4A"; 
-                    if(displaySpd <= 1.5) barColor = "#1D9E75";
-                    else if(displaySpd <= 2.0) barColor = "#5DCAA5";
-                    else if(displaySpd <= 2.5) barColor = "#DFFF00";
-                    else if(displaySpd <= 3.0) barColor = "#EF9F27";
-
-                    svg += '<rect x="'+x+'" y="'+y+'" width="'+barWidth+'" height="'+h+'" fill="'+barColor+'" rx="4" ry="4" opacity="0.9" />';
-                    svg += '<text x="'+(x + barWidth/2)+'" y="'+(y-8)+'" fill="#fff" font-size="10" text-anchor="middle" font-weight="bold">'+displaySpd+'</text>';
-                    svg += '<text x="'+(x + barWidth/2)+'" y="'+(svgH - padBottom + 18)+'" fill="#aaa" font-size="10" text-anchor="middle">S'+data[j].stage+'</text>';
-                }
-
-                svg += '</svg>';
-                chartDiv.innerHTML = svg;
-                panel.style.display = 'flex';
-            }
-
-            function numToTrText(num) {
-                if (num === 0) return "sıfır";
-                var ones = ["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"];
-                var tens = ["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"];
-                
-                function convert(n) {
-                    if (n === 0) return "";
-                    var s = n.toString();
-                    if (s.length === 1) return ones[n];
-                    if (s.length === 2) return tens[Math.floor(n/10)] + ones[n%10];
-                    if (s.length === 3) {
-                        var h = Math.floor(n/100);
-                        var hStr = (h === 1) ? "yüz" : ones[h] + "yüz";
-                        return hStr + convert(n%100);
-                    }
-                    if (s.length === 4) {
-                        var th = Math.floor(n/1000);
-                        var thStr = (th === 1) ? "bin" : ones[th] + "bin";
-                        return thStr + convert(n%1000);
-                    }
-                    return "";
-                }
-                return convert(num) || "sıfır";
-            }
-
-            window.pressSniper = function(val) {
-                if(isKeyboardLocked) return;
-                currentAnswer = val.toString();
-                document.getElementById('answerDisplay').innerText = currentAnswer;
-                checkAnswer();
-            };
-
-            function handlePass() {
-                if(isKeyboardLocked) return;
-                
-                clearTimeout(wrongAnswerTimeout);
-                var ansDisp = document.getElementById('answerDisplay');
-                ansDisp.classList.remove('text-wrong');
-                currentAnswer = "";
-                ansDisp.innerText = "";
-                
-                comboCount = 0; 
-                document.body.classList.remove('fever-mode');
-                document.getElementById('scoreDisplay').innerHTML = "🔥 " + currentScore;
-                
-                var alreadyLogged = false;
-                for(var i=0; i<currentSetMistakes.length; i++) {
-                    if(currentSetMistakes[i].text === currentQuestionText) alreadyLogged = true;
-                }
-                if(!alreadyLogged) {
-                    currentSetMistakes.push({ text: currentQuestionText, expected: expectedAnswer, type: 'pass' });
-                }
-                
-                triggerFlash('spam'); 
-                playWrongSound(); 
-                setTimeout(generateQuestion, 50);
-            }
-            document.getElementById('btnPass').addEventListener('click', handlePass);
-
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.lang = 'tr-TR';
-                recognition.continuous = true; 
-                recognition.interimResults = true; 
-
-                recognition.onstart = function() {
-                    isRecognizing = true;
-                    if(isVoiceMode && document.getElementById('gameScreen').classList.contains('active')) {
-                        document.getElementById('micIndicator').style.display = 'block';
-                    }
-                };
-
-                recognition.onresult = function(event) {
-                    var gameScreenActive = document.getElementById('gameScreen').classList.contains('active');
-                    if (!isVoiceMode || isKeyboardLocked || timeLeft <= 0 || !gameScreenActive) return;
+            if (currentAnswer.length === expectedAnswer.toString().length) {
+                if (parseInt(currentAnswer) === expectedAnswer) {
+                    currentScore++;
+                    document.getElementById('scoreDisplay').innerText = "🔥 " + currentScore;
+                    document.getElementById('progressBar').style.width = ((currentScore/targetScore)*100) + "%";
                     
-                    var currentIndex = event.results.length - 1;
-                    if (currentIndex <= lastCorrectResultIndex) return;
-                    if (new Date().getTime() - questionStartTime < 300) return;
-
-                    var lastResult = event.results[currentIndex];
-                    var transcript = lastResult[0].transcript.toLowerCase().trim();
-                    var cleanTranscript = transcript.replace(/\s/g, ''); 
-
-                    if (cleanTranscript.indexOf("geç") !== -1 || cleanTranscript.indexOf("pas") !== -1 || cleanTranscript.indexOf("bilmiyorum") !== -1) {
-                        lastCorrectResultIndex = currentIndex;
-                        handlePass();
-                        return;
-                    }
-
-                    var expectedStr = expectedAnswer.toString();
-                    var isMatch = false;
-
-                    if (cleanTranscript.indexOf(expectedStr) !== -1) isMatch = true;
-                    if (cleanTranscript.indexOf(numToTrText(expectedAnswer)) !== -1) isMatch = true;
-
-                    if (!isMatch && expectedAnswer > 10 && expectedAnswer < 100 && expectedAnswer % 10 !== 0) {
-                        var tensWord = numToTrText(Math.floor(expectedAnswer/10)*10);
-                        var onesDigit = (expectedAnswer % 10).toString();
-                        if (cleanTranscript.indexOf(tensWord + onesDigit) !== -1) isMatch = true;
-                    }
-
-                    if (isMatch) {
-                        clearTimeout(wrongAnswerTimeout);
-                        document.getElementById('answerDisplay').classList.remove('text-wrong');
-                        currentAnswer = expectedStr;
-                        document.getElementById('answerDisplay').innerText = currentAnswer;
-                        lastCorrectResultIndex = currentIndex; 
-                        checkAnswer();
-                        return;
-                    }
-
-                    var numbers = transcript.match(/\d+/g);
-                    if (numbers && lastResult.isFinal) {
-                        var spokenNumber = numbers.join('');
-                        var reqLen = expectedStr.length;
-                        if (spokenNumber.length > reqLen) { spokenNumber = spokenNumber.slice(-reqLen); }
-
-                        currentAnswer = spokenNumber;
-                        document.getElementById('answerDisplay').innerText = currentAnswer;
-                        if (currentAnswer.length === reqLen) { checkAnswer(); }
-                    } else if (lastResult.isFinal) {
-                        document.getElementById('answerDisplay').innerText = "?";
-                        checkAnswer(); 
-                    }
-                };
-
-                recognition.onerror = function(event) {
-                    if (event.error === 'not-allowed' && persistentStream === null) {
-                        isVoiceMode = false;
-                        document.getElementById('btnVoiceToggle').innerHTML = "🎤 İZİN REDDEDİLDİ";
-                        document.getElementById('btnVoiceToggle').style.backgroundColor = "#E24B4A";
-                        document.getElementById('micIndicator').style.display = 'none';
-                    }
-                };
-
-                recognition.onend = function() {
-                    isRecognizing = false;
-                    document.getElementById('micIndicator').style.display = 'none';
-                    if (isVoiceMode && timeLeft > 0 && document.getElementById('gameScreen').classList.contains('active') && !isKeyboardLocked) {
-                        setTimeout(function() { try { if (!isRecognizing) recognition.start(); } catch(e) {} }, 100);
-                    }
-                };
-            }
-
-            document.getElementById('btnVoiceToggle').addEventListener('click', function() {
-                initAudio(); 
-                if (!recognition) { alert("Tarayıcınız Ses Tanıma özelliğini desteklemiyor."); return; }
-
-                if (!isVoiceMode) {
-                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                        navigator.mediaDevices.getUserMedia({ audio: true })
-                        .then(function(stream) {
-                            persistentStream = stream; 
-                            isVoiceMode = true;
-                            document.getElementById('btnVoiceToggle').innerHTML = "🎤 Sesli Yanıt: AÇIK";
-                            document.getElementById('btnVoiceToggle').style.backgroundColor = "var(--correct-flash)";
-                            try { if(!isRecognizing) recognition.start(); } catch(e) {}
-                        }).catch(function(err) { alert("Mikrofon açılamadı! İzin vermelisiniz."); });
+                    document.body.classList.add('flash-correct');
+                    setTimeout(() => document.body.classList.remove('flash-correct'), 150);
+                    
+                    if(currentScore >= targetScore) {
+                        clearInterval(timerInterval);
+                        document.getElementById('aiAnalysisDisplay').innerText = "TEBRİKLER! YENİ NESİL MAÇ AÇILDI!";
+                        document.getElementById('aiAnalysisDisplay').style.color = "var(--streak-color)";
+                        setTimeout(() => switchScreen('mapScreen'), 2000);
                     } else {
-                        isVoiceMode = true;
-                        document.getElementById('btnVoiceToggle').innerHTML = "🎤 Sesli Yanıt: AÇIK";
-                        document.getElementById('btnVoiceToggle').style.backgroundColor = "var(--correct-flash)";
-                        try { if(!isRecognizing) recognition.start(); } catch(e) {}
+                        setTimeout(generateQuestion, 50);
                     }
                 } else {
-                    isVoiceMode = false;
-                    document.getElementById('btnVoiceToggle').innerHTML = "🎤 Sesli Yanıt: KAPALI";
-                    document.getElementById('btnVoiceToggle').style.backgroundColor = "rgba(255,255,255,0.1)";
-                    
-                    if (persistentStream) { persistentStream.getTracks().forEach(function(track) { track.stop(); }); persistentStream = null; }
-                    try { recognition.stop(); } catch(e) {}
-                }
-            });
-
-            function switchScreen(screenId) {
-                var screens = document.querySelectorAll('.screen');
-                for (var i = 0; i < screens.length; i++) { screens[i].classList.remove('active'); }
-                document.getElementById(screenId).classList.add('active');
-            }
-
-            function triggerFlash(type) {
-                document.body.classList.add('flash-' + type);
-                setTimeout(function() { document.body.classList.remove('flash-' + type); }, 150); 
-            }
-
-            function updateProgressBar() {
-                var percentage = (currentScore / targetScore) * 100;
-                if(percentage > 100) percentage = 100;
-                document.getElementById('progressBar').style.width = percentage + "%";
-            }
-
-            function saveAI() { try { localStorage.setItem('mathHeroAIStats' + storageVersion, JSON.stringify(aiStats)); } catch(e) {} }
-
-            function calculateWeakestOp() {
-                var weakest = '+'; var maxScore = -1;
-                for (var op in aiStats) {
-                    if (aiStats.hasOwnProperty(op)) {
-                        var avgTime = aiStats[op].count > 0 ? aiStats[op].totalTime / aiStats[op].count : 1000;
-                        var score = (aiStats[op].errors * 500) + avgTime;
-                        if (score > maxScore) { maxScore = score; weakest = op; }
-                    }
-                }
-                return weakest;
-            }
-
-            function getOpName(op) {
-                var names = { '+': 'Toplama', '-': 'Çıkarma', '×': 'Çarpma', '÷': 'Bölme' };
-                return names[op] || 'Toplama';
-            }
-
-            function updateStatsDisplay() {
-                var history = [];
-                try { history = JSON.parse(localStorage.getItem('mathHeroHistory' + storageVersion) || '[]'); } catch(e) {}
-                
-                var statsDiv = document.getElementById('statsDisplay');
-                var html = "<b>🎯 LGS Antrenman Durumu:</b><br>";
-                
-                if (history.length > 0 && history[history.length-1].stage >= 3) {
-                    html += "AI Tespiti (Zayıf Noktan): <span style='color:var(--timer-critical)'>" + getOpName(calculateWeakestOp()) + "</span><br><br>";
-                } else {
-                    html += "<span style='color:var(--timer-normal)'>🚀 Isınma (Çarpım Tablosu) Aşamasındasın</span><br><br>";
-                }
-                
-                html += "<b>Son Setlerin:</b><br>";
-                if (history.length === 0) { html += "<span style='color:#aaa;'>Henüz tamamlanmış set yok. Korta çık!</span><br>"; } 
-                else {
-                    var recent = history.slice(-3).reverse();
-                    for (var n = 0; n < recent.length; n++) {
-                        if (recent[n] && recent[n].stage && recent[n].speed) {
-                            html += "Set " + recent[n].stage + " <span style='color:#aaa;'>→</span> " + recent[n].speed + " sn/soru<br>";
-                        }
-                    }
-                }
-                statsDiv.innerHTML = html;
-            }
-
-            function generateQuestion() {
-                var aiDisplay = document.getElementById('aiAnalysisDisplay');
-                var ansDisp = document.getElementById('answerDisplay');
-
-                clearTimeout(wrongAnswerTimeout);
-                ansDisp.innerText = "";
-                ansDisp.classList.remove('text-wrong');
-                currentAnswer = "";
-                
-                document.getElementById('sniperOptions').style.display = 'none';
-                isKeyboardLocked = false;
-
-                if (isExamMode) {
-                    aiDisplay.innerText = "🚨 ARENA MODU AKTİF";
-                    aiDisplay.style.color = "var(--streak-color)";
-                    
-                    if (currentExam === 1) { 
-                        var ops = ['+', '-', '×'];
-                        var op = ops[Math.floor(Math.random()*3)];
-                        if(op === '+') {
-                            var a = Math.floor(Math.random()*20)+10;
-                            expectedAnswer = Math.floor(Math.random()*20)+10; 
-                            var c = a + expectedAnswer;
-                            currentQuestionText = a + " + ? = " + c;
-                        } else if (op === '-') {
-                            expectedAnswer = Math.floor(Math.random()*20)+10; 
-                            var c = Math.floor(Math.random()*20)+10; 
-                            var a = expectedAnswer + c; 
-                            currentQuestionText = a + " - ? = " + c;
-                        } else if (op === '×') {
-                            var a = Math.floor(Math.random()*8)+2;
-                            expectedAnswer = Math.floor(Math.random()*8)+2; 
-                            var c = a * expectedAnswer;
-                            currentQuestionText = a + " x ? = " + c;
-                        }
-                        lastOp = op;
-                        document.getElementById('questionDisplay').innerText = currentQuestionText;
-                        questionStartTime = new Date().getTime();
-                        
-             } else if (currentExam === 2) { 
-                        // 2. ARENA: KESKİN NİŞANCI (Net Çarpım Sonucu)
-                        var a = Math.floor(Math.random()*20) + 40; // 40-59 arası
-                        var b = Math.floor(Math.random()*10) + 9;  // 9-18 arası
-                        
-                        // Doğrudan net sonucu hesapla
-                        expectedAnswer = a * b; 
-                        
-                        // Şaşırtıcı şıkları üret (Sadece son basamağa bakıp uyanıklık yapamasın diye 10 altı/üstü)
-                        var w1 = expectedAnswer + 10;
-                        var w2 = expectedAnswer - 10;
-                        
-                        var opts = [expectedAnswer, w1, w2].sort(function() { return Math.random() - 0.5; });
-                        
-                        // Yaklaşık işareti yerine Eşittir kullanıyoruz
-                        currentQuestionText = a + " x " + b + " = ?";
-                        document.getElementById('questionDisplay').innerText = currentQuestionText;
-                        
-                        var snipDiv = document.getElementById('sniperOptions');
-                        snipDiv.style.display = 'flex';
-                        snipDiv.innerHTML = '';
-                        opts.forEach(function(o) {
-                            snipDiv.innerHTML += '<button class="btn-secondary" style="font-size:20px; padding:12px 5px; flex:1;" onclick="pressSniper('+o+')">'+o+'</button>';
-                        });
-                        lastOp = '×';
-                        questionStartTime = new Date().getTime();
-                        
-                    } else if (currentExam === 3) {
-                        isKeyboardLocked = true; 
-                        var a = Math.floor(Math.random()*30)+15; 
-                        var b = Math.floor(Math.random()*20)+10; 
-                        expectedAnswer = a + b;
-                        currentQuestionText = "Flaş: " + a + " + " + b;
-                        lastOp = '+';
-                        
-                        var qd = document.getElementById('questionDisplay');
-                        qd.innerText = "Hazır...";
-                        setTimeout(function() { qd.innerText = a; }, 400);
-                        setTimeout(function() { qd.innerText = "+"; }, 800);
-                        setTimeout(function() { qd.innerText = b; }, 1200);
-                        setTimeout(function() { 
-                            qd.innerText = "?"; 
-                            isKeyboardLocked = false;
-                            questionStartTime = new Date().getTime();
-                        }, 1600);
-                        
-                    } else if (currentExam === 4) { 
-                        var a = (Math.floor(Math.random()*8)+2) * 10;
-                        var b = (Math.floor(Math.random()*8)+2) * 10;
-                        expectedAnswer = a * b;
-                        currentQuestionText = a + " x " + b;
-                        document.getElementById('questionDisplay').innerText = currentQuestionText;
-                        lastOp = '×';
-                        questionStartTime = new Date().getTime();
-                    }
-                    return;
-                }
-
-                var op; var num1, num2;
-                if (currentStage <= 3) {
-                    op = '×'; num1 = Math.floor(Math.random() * 8) + 2; num2 = Math.floor(Math.random() * 8) + 2; 
-                    aiDisplay.innerText = "🔥 Isınma Seti: Çarpım Tablosu"; aiDisplay.style.color = "var(--timer-normal)";
-                } else {
-                    var opList = ['+', '-', '×', '÷'];
-                    var weakest = calculateWeakestOp();
-                    var rand = Math.random();
-                    if (rand < 0.5) op = weakest; else op = opList[Math.floor(Math.random() * 4)];
-                    
-                    aiDisplay.innerText = "🤖 AI Analiz Ediyor: " + getOpName(op); aiDisplay.style.color = "var(--tennis-color)";
-
-                    if (currentStage < 6) {
-                        if (op === '+') { num1 = Math.floor(Math.random() * 15) + 10; num2 = Math.floor(Math.random() * 10) + 5; } 
-                        else if (op === '-') { num1 = Math.floor(Math.random() * 20) + 20; num2 = Math.floor(Math.random() * 10) + 5; } 
-                        else if (op === '×') { num1 = Math.floor(Math.random() * 5) + 2; num2 = Math.floor(Math.random() * 5) + 2; } 
-                        else { var d1 = Math.floor(Math.random() * 4) + 2; var q1 = Math.floor(Math.random() * 4) + 2; num1 = d1 * q1; num2 = d1; } 
-                    } 
-                    else if (currentStage <= 8) {
-                        if (op === '+') { num1 = Math.floor(Math.random() * 30) + 15; num2 = Math.floor(Math.random() * 20) + 10; } 
-                        else if (op === '-') { num1 = Math.floor(Math.random() * 30) + 30; num2 = Math.floor(Math.random() * 20) + 10; } 
-                        else if (op === '×') { num1 = Math.floor(Math.random() * 8) + 2; num2 = Math.floor(Math.random() * 8) + 2; } 
-                        else { var d2 = Math.floor(Math.random() * 8) + 2; var q2 = Math.floor(Math.random() * 8) + 2; num1 = d2 * q2; num2 = d2; }
-                    } else {
-                        if (op === '+') { num1 = Math.floor(Math.random() * 50) + 30; num2 = Math.floor(Math.random() * 50) + 20; } 
-                        else if (op === '-') { num1 = Math.floor(Math.random() * 50) + 50; num2 = Math.floor(Math.random() * 40) + 20; } 
-                        else if (op === '×') { num1 = Math.floor(Math.random() * 8) + 4; num2 = Math.floor(Math.random() * 6) + 4; } 
-                        else { var d3 = Math.floor(Math.random() * 8) + 3; var q3 = Math.floor(Math.random() * 8) + 3; num1 = d3 * q3; num2 = d3; }
-                    }
-                }
-
-                if (op === '-' && num1 < num2) { var t = num1; num1 = num2; num2 = t; }
-                if (op === '+') expectedAnswer = num1 + num2;
-                if (op === '-') expectedAnswer = num1 - num2;
-                if (op === '×') expectedAnswer = num1 * num2;
-                if (op === '÷') expectedAnswer = num1 / num2;
-
-                lastOp = op;
-                var opSign = op === '×' ? "x" : op;
-                currentQuestionText = num1 + " " + opSign + " " + num2;
-                
-                document.getElementById('questionDisplay').innerText = num1 + " " + op + " " + num2;
-                questionStartTime = new Date().getTime();
-            }
-
-            function checkAnswer() {
-                var now = new Date().getTime();
-                var timeSpent = now - questionStartTime;
-                var isCorrect = (parseInt(currentAnswer) === expectedAnswer);
-                var ansDisp = document.getElementById('answerDisplay');
-
-                if (!isExamMode && currentStage > 3) {
-                    aiStats[lastOp].count++;
-                    aiStats[lastOp].totalTime += timeSpent;
-                    if (!isCorrect) aiStats[lastOp].errors++; 
-                    saveAI();
-                }
-
-                if (isCorrect) {
-                    comboCount++;
-                    setResponseTimes.push(timeSpent); 
-                    
-                    var isFever = comboCount >= 5;
-                    var pointsEarned = isFever ? 2 : 1;
-                    currentScore += pointsEarned;
-                    
-                    addXP(isFever ? 20 : 10); 
-
-                    if (comboCount === 5) {
-                        timeLeft += 3;
-                        document.getElementById('timerDisplay').innerText = "⏱ " + timeLeft;
-                        
-                        createFloatingText("+3 Sn", "timerDisplay", "var(--timer-normal)");
-                        createFloatingText("x2", "scoreDisplay", "var(--streak-color)");
-                        
-                        document.body.classList.add('fever-mode');
-                        playComboSound(); 
-                        addXP(50); 
-                    } else {
-                        playCorrectSound(); 
-                    }
-                    
-                    var scoreHTML = "🔥 " + currentScore;
-                    if(isFever) scoreHTML += " <span class='fever-text'>(x2)</span>";
-                    document.getElementById('scoreDisplay').innerHTML = scoreHTML;
-                    
-                    updateProgressBar();
-                    triggerFlash('correct');
-                    
-                    if (currentScore >= targetScore) { 
-                        setTimeout(function() {
-                            if (isExamMode) triggerExamWin();
-                            else triggerLevelUp();
-                        }, 200); 
-                    } else { setTimeout(generateQuestion, 50); }
-                } else {
-                    playWrongSound(); 
-                    comboCount = 0; 
-                    document.body.classList.remove('fever-mode');
-                    document.getElementById('scoreDisplay').innerHTML = "🔥 " + currentScore; 
-                    
-                    var alreadyLogged = false;
-                    for(var i=0; i<currentSetMistakes.length; i++) {
-                        if(currentSetMistakes[i].text === currentQuestionText) alreadyLogged = true;
-                    }
-                    if(!alreadyLogged) {
-                        currentSetMistakes.push({ text: currentQuestionText, expected: expectedAnswer, type: 'wrong' });
-                    }
-
                     ansDisp.classList.add('text-wrong');
-                    clearTimeout(wrongAnswerTimeout);
-                    wrongAnswerTimeout = setTimeout(function() {
-                        currentAnswer = "";
-                        ansDisp.innerText = "";
-                        ansDisp.classList.remove('text-wrong');
-                    }, 500); 
+                    document.body.classList.add('flash-wrong');
+                    setTimeout(() => document.body.classList.remove('flash-wrong'), 150);
+                    setTimeout(function() { currentAnswer = ""; ansDisp.innerText = ""; }, 400);
                 }
             }
-
-            function triggerExamWin() {
-                clearInterval(timerInterval);
-                isKeyboardLocked = true;
-                
-                document.body.classList.remove('fever-mode'); 
-                playEpicWinSound(); 
-                addXP(500); 
-                
-                totalSetsCompleted++;
-                try { localStorage.setItem('mathHeroTotalSets' + storageVersion, totalSetsCompleted.toString()); } catch(e) {}
-                updateRacketProgress();
-
-                updateStreakLogic(true);
-
-                earnedBadges[currentExam] = true;
-                localStorage.setItem('mathHeroBadges' + storageVersion, JSON.stringify(earnedBadges));
-                updateRankDisplay();
-                
-                document.getElementById('transTitle').innerText = "🏆 ARENA FETHEDİLDİ!";
-                document.getElementById('transTitle').style.color = "var(--streak-color)";
-                document.getElementById('passedStageDisplay').innerText = "Mükemmel performans! LGS reflekslerin keskinleşiyor. (+500 XP)";
-                document.getElementById('lgsMessage').innerHTML = "🎾 <b>Koç diyor ki:</b> \"İşte görmek istediğim buydu! Gerçek bir şampiyon gibi savaştın.\"";
-                
-                renderMistakes();
-                
-                document.getElementById('btnNextStage').innerText = "Maceraya Devam Et";
-                document.getElementById('btnNextStage').onclick = function() { 
-                    isExamMode = false;
-                    currentStage++; 
-                    startStage(); 
-                };
-                
-                document.getElementById('rewardContainer').innerHTML = ""; 
-                switchScreen('transitionScreen');
-            }
-
-            function triggerExamLoss() {
-                document.body.classList.remove('fever-mode'); 
-                playWrongSound(); 
-                
-                updateStreakLogic(true); 
-
-                document.getElementById('transTitle').innerText = "💀 ARENA KAYBEDİLDİ";
-                document.getElementById('transTitle').style.color = "var(--timer-critical)";
-                document.getElementById('passedStageDisplay').innerText = "Süre doldu. Hedefe süre bitmeden ulaşman gerekiyordu.";
-                document.getElementById('lgsMessage').innerHTML = "🎾 <b>Koç diyor ki:</b> \"Pes etmek yok! LGS şampiyonları düştükleri yerden kalkanlardır. Tekrar dene!\"";
-                
-                renderMistakes();
-                
-                document.getElementById('btnNextStage').innerText = "Arenayı Tekrar Dene";
-                document.getElementById('btnNextStage').onclick = function() { prepareExam(currentExam); };
-                
-                document.getElementById('rewardContainer').innerHTML = ""; 
-                switchScreen('transitionScreen');
-            }
-
-            function triggerLevelUp() {
-                clearInterval(timerInterval);
-                isKeyboardLocked = true;
-                
-                document.body.classList.remove('fever-mode'); 
-                playComboSound(); 
-                addXP(100); 
-                
-                totalSetsCompleted++;
-                try { localStorage.setItem('mathHeroTotalSets' + storageVersion, totalSetsCompleted.toString()); } catch(e) {}
-                updateRacketProgress();
-
-                updateStreakLogic(true);
-                
-                var sum = 0;
-                for (var i = 0; i < setResponseTimes.length; i++) { sum += setResponseTimes[i]; }
-                var avgSec = setResponseTimes.length > 0 ? (sum / setResponseTimes.length / 1000).toFixed(2) : "0.00";
-                
-                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed' + storageVersion)) || 999;
-                if (parseFloat(avgSec) > 0 && parseFloat(avgSec) < bestOverall) {
-                    localStorage.setItem('mathHeroBestSpeed' + storageVersion, avgSec);
-                }
-
-                try {
-                    var history = [];
-                    var raw = localStorage.getItem('mathHeroHistory' + storageVersion);
-                    if (raw) history = JSON.parse(raw);
-                    if (!Array.isArray(history)) history = [];
-                    history.push({ stage: currentStage, speed: avgSec });
-                    if (history.length > 20) history = history.slice(-20);
-                    localStorage.setItem('mathHeroHistory' + storageVersion, JSON.stringify(history));
-                } catch(e) {}
-
-                var finalMsg = "";
-                var statsHtml = "Ortalama Hızın: <b style='color:var(--timer-normal)'>" + avgSec + " sn/soru</b><br>";
-
-                if (currentStage < 3) {
-                    statsHtml += "<span style='color:#aaa;'>Isınma devam ediyor... Dört işleme az kaldı!</span>";
-                    finalMsg = "🎾 <b>Koç diyor ki:</b> \"Harika bir ısınma " + playerName + "! Çarpım tablosunda ne kadar hızlanırsan, arenada o kadar yenilmez olursun. Aynen devam!\"";
-                } else {
-                    statsHtml += "AI Tespiti (Zayıf Noktan): <span style='color:var(--timer-critical)'>" + getOpName(calculateWeakestOp()) + "</span>";
-                    var rawMsg = tennisStories[Math.floor(Math.random() * tennisStories.length)];
-                    finalMsg = rawMsg.replace('{isim}', playerName).replace('{weak_info}', getOpName(calculateWeakestOp()));
-                }
-                
-                document.getElementById('passedStageDisplay').innerHTML = statsHtml;
-                document.getElementById('lgsMessage').innerHTML = finalMsg;
-                
-                renderMistakes();
-                renderRewards();
-                
-                document.getElementById('btnNextStage').innerText = "Sıradaki Set";
-                document.getElementById('btnNextStage').onclick = handleNextStageClick;
-                
-                switchScreen('transitionScreen');
-            }
-
-            function renderMistakes() {
-                var mistakesBox = document.getElementById('mistakesDisplay');
-                if (currentSetMistakes.length > 0) {
-                    mistakesBox.style.display = "block";
-                    mistakesBox.style.borderLeftColor = "var(--timer-critical)";
-                    
-                    var mistHTML = "<b>⚠️ Karşılaştığın Zorluklar (Çözümler):</b><br><ul style='margin-left: 5px; margin-top: 5px; list-style: none; padding: 0;'>";
-                    for(var m=0; m<currentSetMistakes.length; m++) {
-                        var item = currentSetMistakes[m];
-                        var icon = item.type === 'pass' ? "⏭️ Pas" : "❌ Hata";
-                        mistHTML += "<li style='margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;'>" + icon + ": " + item.text + " <b>= <span style='color:var(--timer-normal)'>" + item.expected + "</span></b></li>";
-                    }
-                    mistHTML += "</ul>";
-                    mistakesBox.innerHTML = mistHTML;
-                } else {
-                    mistakesBox.style.display = "block";
-                    mistakesBox.style.borderLeftColor = "var(--timer-normal)";
-                    mistakesBox.innerHTML = "<b style='color:var(--timer-normal);'>🌟 Harika! Hiç hata yapmadan bitirdin.</b>";
-                }
-            }
-
-            function handleNextStageClick() {
-                if (!isExamMode) {
-                    if (currentStage === 3) { prepareExam(1); }
-                    else if (currentStage === 6) { prepareExam(2); }
-                    else if (currentStage === 9) { prepareExam(3); }
-                    else if (currentStage === 12) { prepareExam(4); }
-                    else { currentStage++; startStage(); }
-                }
-            }
-
-            function prepareExam(examId) {
-                isExamMode = true;
-                currentExam = examId;
-                switchScreen('examIntroScreen');
-                playSiren();
-                
-                var titles = ["1. ARENA: KAYIP HALKA", "2. ARENA: KESKİN NİŞANCI", "3. ARENA: FLAŞ BELLEK", "4. ARENA: ŞİMŞEK TAKTİKLER"];
-                var descs = [
-                    "LGS'de tersine düşünmek hayati önem taşır. Verilmeyen sayıyı zihninden bulup şifreyi çöz! Hedefin süren bitmeden 20 doğru.",
-                    "İşlemi sonuna kadar yapma! Şıklara bakıp en yakın tahmini seç. Süren hızla akıyor! Hedef 20 doğru.",
-                    "Sayılar ekranda sadece yarım saniye görünecek. Zihninde tut, birleştir ve vur! Odaklan! Hedef 20 doğru.",
-                    "Kısayol: Sonu 0 olan sayıları çarparken sıfırları çöpe at, sayıları çarp, sıfırları geri ekle. Dev sayıları yut! Hedef 20 doğru."
-                ];
-                
-                document.getElementById('examName').innerText = titles[examId - 1];
-                document.getElementById('examDesc').innerText = descs[examId - 1];
-            }
-
-            document.getElementById('btnStartExam').addEventListener('click', function() {
-                startExamStage();
-            });
-
-            function startExamStage() {
-                currentScore = 0;
-                comboCount = 0; 
-                document.body.classList.remove('fever-mode');
-                currentSetMistakes = []; 
-                setResponseTimes = [];
-                
-                targetScore = 20; 
-                timeLeft = 90; 
-                
-                lastCorrectResultIndex = -1; 
-                isKeyboardLocked = false;
-                
-                document.getElementById('stageDisplay').innerText = "BOSS SAVAŞI";
-                document.getElementById('stageDisplay').style.color = "var(--timer-critical)";
-                document.getElementById('scoreDisplay').innerHTML = "🔥 0";
-                document.getElementById('targetText').innerText = targetScore;
-                
-                document.getElementById('progressBar').style.width = "0%";
-                document.getElementById('ghostBar').style.width = "0%";
-                
-                ghostTotalTime = 90; 
-                ghostStartTime = new Date().getTime();
-
-                switchScreen('gameScreen');
-                generateQuestion();
-                
-                if (isVoiceMode && !isRecognizing) { try { recognition.start(); } catch(e) {} }
-                
-                clearInterval(timerInterval);
-                timerInterval = setInterval(function() {
-                    timeLeft--;
-                    document.getElementById('timerDisplay').innerText = "⏱ " + timeLeft;
-                    
-                    if(timeLeft <= 10 && timeLeft > 0) { playTickSound(); }
-
-                    var elapsedSec = (new Date().getTime() - ghostStartTime) / 1000;
-                    var ghostPct = (elapsedSec / ghostTotalTime) * 100;
-                    if (ghostPct > 100) ghostPct = 100;
-                    document.getElementById('ghostBar').style.width = ghostPct + "%";
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        triggerExamLoss();
-                    }
-                }, 1000);
-            }
-
-            function renderRewards() {
-                var container = document.getElementById('rewardContainer');
-                container.innerHTML = "";
-                
-                if (currentStage < 3) {
-                    container.innerHTML = "<p style='width:100%; font-size:15px; color:var(--streak-color); margin-bottom:5px; text-align:center;'>🚀 Sadece çarpım tablosu ısınma setlerindesin.<br>Ödüller 3. setten sonra açılacak!</p>";
-                    return;
-                }
-
-                container.innerHTML = "<p style='width:100%; font-size:12px; color:#aaa; margin-bottom:5px;'>🎁 Başarın İçin Ödülünü Seç:</p>";
-                var rewards = [];
-                
-                var smStartStage = 2 + currentDailySession; 
-                
-                if (currentStage >= 3) { 
-                    rewards.push({id:'t', text:'⏱ Oyun İçi +5 Sn'}); 
-                }
-                
-                if (currentStage >= smStartStage && (currentStage - smStartStage) % 3 === 0) {
-                    rewards.push({id:'s', text:'📱 15 Dk Sosyal Medya'});
-                }
-                
-                if (currentStage >= 5) { rewards.push({id:'a', text:'🍫 Atıştırmalık'}); }
-                if (currentStage >= 6) { rewards.push({id:'i', text:'🧃 İçecek'}); }
-
-                for (var m = 0; m < rewards.length; m++) {
-                    (function(r) {
-                        var b = document.createElement('button');
-                        b.className = 'btn-reward';
-                        b.innerText = r.text;
-                        b.onclick = function() {
-                            playCorrectSound(); 
-                            if (r.id === 't') { extraBonusTime += 5; }
-                            else { sendWhatsApp(r.text); }
-                            this.style.background = "var(--correct-flash)";
-                            this.innerText = "✅ Alındı";
-                            var allBtns = container.querySelectorAll('button');
-                            for (var x = 0; x < allBtns.length; x++) { allBtns[x].disabled = true; }
-                        };
-                        container.appendChild(b);
-                    })(rewards[m]);
-                }
-            }
-
-            function sendWhatsApp(rewardText) {
-                var d = new Date();
-                var now = d.toLocaleDateString('tr-TR') + " " + d.toLocaleTimeString('tr-TR');
-                var randomCode = Math.random().toString(36).substring(2, 7).toUpperCase(); 
-
-                var sum = 0;
-                for (var i = 0; i < setResponseTimes.length; i++) { sum += setResponseTimes[i]; }
-                var avgSec = setResponseTimes.length > 0 ? (sum / setResponseTimes.length / 1000).toFixed(2) : "0.00";
-
-                var msg = "🚨 [SİSTEM BİLDİRİMİ - ONAYLI]\n" +
-                          "👤 Oyuncu: " + playerName + "\n" +
-                          "🏆 Başarı: " + currentStage + ". Set (Hız: " + avgSec + " sn)\n" +
-                          "🎁 Ödül: " + rewardText + "\n" +
-                          "📅 Zaman: " + now + "\n" +
-                          "🔐 GÜVENLİK KODU: #" + randomCode + "\n\n" +
-                          "(Bu mesaj CallMeBot API tarafından otomatik iletilmiştir. Kopyalanamaz.)";
-                          
-                var url = "https://api.callmebot.com/whatsapp.php?phone=" + parentPhoneNumber + "&text=" + encodeURIComponent(msg) + "&apikey=" + api_key;
-                
-                fetch(url).then(function() { 
-                    showToastMessage("Babana İletildi! Kod: #" + randomCode, true); 
-                });
-            }
-
-            function initGame() {
-                initAudio(); 
-                var inputEl = document.getElementById('playerNameInput');
-                playerName = (inputEl && inputEl.value.trim() !== "") ? inputEl.value.trim() : "Ömer";
-                try { localStorage.setItem('mathHeroName', playerName); } catch(e) {}
-                
-                streakData.opensToday++;
-                currentDailySession = streakData.opensToday;
-                try { localStorage.setItem('mathHeroStreak' + storageVersion, JSON.stringify(streakData)); } catch(e) {}
-                renderDashboardUI();
-                
-                currentStage = 1;
-                extraBonusTime = 0;
-                startStage();
-            }
-
-            function startStage() {
-                isExamMode = false; 
-                currentScore = 0;
-                comboCount = 0; 
-                document.body.classList.remove('fever-mode');
-                currentSetMistakes = []; 
-                setResponseTimes = [];
-                timeLeft = 60 + ((currentStage > 3 ? (currentStage - 3) : 0) * 5) + extraBonusTime;
-                
-                lastCorrectResultIndex = -1; 
-                isKeyboardLocked = false;
-                
-                document.getElementById('stageDisplay').innerText = "Set " + currentStage;
-                document.getElementById('stageDisplay').style.color = "#888";
-                document.getElementById('scoreDisplay').innerHTML = "🔥 0";
-                
-                targetScore = 15;
-                document.getElementById('targetText').innerText = targetScore;
-                
-                document.getElementById('progressBar').style.width = "0%";
-                document.getElementById('ghostBar').style.width = "0%";
-                
-                var bestOverall = parseFloat(localStorage.getItem('mathHeroBestSpeed' + storageVersion)) || 0;
-                if(bestOverall > 0) { ghostTotalTime = targetScore * bestOverall; } 
-                else { ghostTotalTime = targetScore * 4; }
-                ghostStartTime = new Date().getTime();
-
-                switchScreen('gameScreen');
-                generateQuestion();
-                
-                if (isVoiceMode && !isRecognizing) { try { recognition.start(); } catch(e) {} }
-                
-                clearInterval(timerInterval);
-                timerInterval = setInterval(function() {
-                    timeLeft--;
-                    document.getElementById('timerDisplay').innerText = "⏱ " + timeLeft;
-                    
-                    if(timeLeft <= 10 && timeLeft > 0) { playTickSound(); }
-
-                    var elapsedSec = (new Date().getTime() - ghostStartTime) / 1000;
-                    var ghostPct = (elapsedSec / ghostTotalTime) * 100;
-                    if (ghostPct > 100) ghostPct = 100;
-                    document.getElementById('ghostBar').style.width = ghostPct + "%";
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        switchScreen('startScreen');
-                        updateStatsDisplay();
-                    }
-                }, 1000);
-            }
-
-            function pressKey(val) {
-                if (isKeyboardLocked) return;
-                var ansDisp = document.getElementById('answerDisplay');
-                
-                clearTimeout(wrongAnswerTimeout);
-                ansDisp.classList.remove('text-wrong');
-                
-                if (val === 'C') { currentAnswer = ""; ansDisp.innerText = "";}
-                else if (val === '⌫') { 
-                    currentAnswer = currentAnswer.slice(0, -1); 
-                    ansDisp.innerText = currentAnswer;
-                }
-                else if (currentAnswer.length < 5) { 
-                    currentAnswer += val; 
-                    ansDisp.innerText = currentAnswer;
-                }
-                
-                if (currentAnswer.length === expectedAnswer.toString().length) { checkAnswer(); }
-            }
-
-            document.getElementById('btnStartGame').addEventListener('click', initGame);
-            
-            var keysList = document.querySelectorAll('.num-key');
-            for (var k = 0; k < keysList.length; k++) {
-                keysList[k].addEventListener('pointerdown', function(e) {
-                    if (e.pointerType === 'mouse' || e.pointerType === 'touch') { pressKey(this.getAttribute('data-val')); }
-                });
-            }
-            
-            document.addEventListener('keydown', function(e) {
-                var key = e.key;
-                if (!key) {
-                    var code = e.keyCode;
-                    if (code === 13) key = 'Enter';
-                    else if (code === 8) key = 'Backspace';
-                    else if (code === 27) key = 'Escape';
-                    else if (code >= 48 && code <= 57) key = String.fromCharCode(code);
-                }
-
-                var startScreen = document.getElementById('startScreen');
-                var transitionScreen = document.getElementById('transitionScreen');
-                var gameScreen = document.getElementById('gameScreen');
-                var examIntroScreen = document.getElementById('examIntroScreen');
-
-                if (startScreen.classList.contains('active')) { if (key === 'Enter') initGame(); } 
-                else if (transitionScreen.classList.contains('active')) { 
-                    if (key === 'Enter') { document.getElementById('btnNextStage').click(); } 
-                }
-                else if (examIntroScreen.classList.contains('active')) { 
-                    if (key === 'Enter') { startExamStage(); } 
-                }
-                else if (gameScreen.classList.contains('active')) {
-                    if (key >= '0' && key <= '9') pressKey(key);
-                    if (key === 'Backspace') pressKey('⌫');
-                    if (key === 'Escape' || key === 'c' || key === 'C') pressKey('C');
-                    if (key === 'g' || key === 'G' || key === 'p' || key === 'P') handlePass();
-                }
-            });
-
-            try {
-                var savedName = localStorage.getItem('mathHeroName');
-                if (savedName) document.getElementById('playerNameInput').value = savedName;
-            } catch(e) {}
-            
-            updateRankDisplay();
-            updateStatsDisplay();
-        })();
+        };
     </script>
 </body>
-</html> 
+</html>
