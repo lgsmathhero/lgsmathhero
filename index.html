@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Tüm Dersler v20</title>
+    <title>Math Hero LGS - Tüm Konular v21</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -69,10 +69,10 @@
     <!-- ANA EKRAN -->
     <div id="startScreen" class="screen active">
         <div class="title" style="margin-top: 20px;">LGS KAMP MERKEZİ</div>
-        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v20 Tam Kadro LGS Sürümü</div>
+        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v21 Tüm Konular Sürümü</div>
         
         <div class="glass-panel" style="padding:15px; text-align:center; font-size:14px; margin-bottom: 20px;">
-            <b style="color:var(--timer-normal)">Tüm Dersler Aktif</b><br>
+            <b style="color:var(--timer-normal)">Tüm Dersler ve Konular Aktif</b><br>
             <span style="color:#ccc">Ömer için kilitler kaldırıldı. İstediğin konudan maça başla!</span>
         </div>
 
@@ -98,7 +98,6 @@
             <div class="subject-card" style="border-color: var(--sos-color);" onclick="openSubjectMap('sos')">
                 <div class="subject-icon">🌍</div><div class="subject-name" style="color: var(--sos-color);">İnkılap Tarihi</div>
             </div>
-            <!-- EKLENEN İNGİLİZCE VE DİN KÜLTÜRÜ -->
             <div class="subject-card" style="border-color: var(--ing-color);" onclick="openSubjectMap('ing')">
                 <div class="subject-icon">🗽</div><div class="subject-name" style="color: var(--ing-color);">İngilizce</div>
             </div>
@@ -147,13 +146,32 @@
     </div>
 
     <script>
-        // --- MEB LGS SORU BANKASI VE KONU VERİTABANI ---
+        // --- MEB LGS SORU BANKASI VE TÜM KONULAR (V21) ---
         const lgsData = {
+            mat: {
+                title: "MATEMATİK KAMP", color: "var(--mat-color)",
+                topics: [
+                    { name: "Çarpanlar ve Katlar", term: 1, questions: [] },
+                    { name: "Üslü İfadeler", term: 1, questions: [] },
+                    { name: "Kareköklü İfadeler", term: 1, questions: [] },
+                    { name: "Veri Analizi", term: 1, questions: [] },
+                    { name: "Olasılık", term: 1, questions: [] },
+                    { name: "Cebirsel İfadeler", term: 1, questions: [] },
+                    { name: "Doğrusal Denklemler", term: 2, questions: [] },
+                    { name: "Eşitsizlikler", term: 2, questions: [] },
+                    { name: "Üçgenler", term: 2, questions: [] },
+                    { name: "Eşlik ve Benzerlik", term: 2, questions: [] },
+                    { name: "Dönüşüm Geometrisi", term: 2, questions: [] },
+                    { name: "Geometrik Cisimler", term: 2, questions: [] }
+                ]
+            },
             turkce: {
                 title: "TÜRKÇE KAMP", color: "var(--turkce-color)",
                 topics: [
+                    { name: "Sözcükte Anlam", term: 1, questions: [] },
+                    { name: "Cümlede Anlam", term: 1, questions: [] },
                     { 
-                        name: "Parçada Anlam", term: 1,
+                        name: "Parçada Anlam (Mantık)", term: 1,
                         theory: "LGS Türkçe paragraf sorularında MEB genellikle okuduğunu anlama, görsel okuma ve mantık yürütme becerisini ölçer. Soru kökünde 'Değinilmemiştir', 'Söylenemez' gibi olumsuz ifadelere çok dikkat et.",
                         questions: [
                             {
@@ -173,14 +191,20 @@
                                 correct: "d"
                             }
                         ]
-                    }
+                    },
+                    { name: "Fiilimsiler", term: 1, questions: [] },
+                    { name: "Cümlenin Ögeleri", term: 1, questions: [] },
+                    { name: "Yazım ve Noktalama", term: 1, questions: [] },
+                    { name: "Fiilde Çatı", term: 2, questions: [] },
+                    { name: "Cümle Türleri", term: 2, questions: [] },
+                    { name: "Anlatım Bozuklukları", term: 2, questions: [] }
                 ]
             },
             fen: {
                 title: "FEN BİLİMLERİ KAMP", color: "var(--fen-color)",
                 topics: [
                     {
-                        name: "Mevsimler, İklim ve Canlılar", term: 1,
+                        name: "Mevsimler ve İklim", term: 1,
                         theory: "MEB Fen Bilimlerinde uzun deney metinleri ve çıkarım soruları sorar. Tablo ve grafikleri okumak metni okumak kadar önemlidir.",
                         questions: [
                             {
@@ -192,13 +216,52 @@
                                 correct: "c"
                             }
                         ]
-                    }
+                    },
+                    { name: "DNA ve Genetik Kod", term: 1, questions: [] },
+                    { name: "Basınç", term: 1, questions: [] },
+                    { name: "Madde ve Endüstri", term: 1, questions: [] },
+                    { name: "Basit Makineler", term: 2, questions: [] },
+                    { name: "Enerji Dönüşümleri", term: 2, questions: [] },
+                    { name: "Elektrik Yükleri", term: 2, questions: [] }
                 ]
             },
-            mat: { title: "MATEMATİK KAMP", color: "var(--mat-color)", topics: [ { name: "Çarpanlar ve Katlar", term: 1, questions: [] }, { name: "Üslü İfadeler", term: 1, questions: [] }, { name: "Doğrusal Denklemler", term: 2, questions: [] } ] },
-            sos: { title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)", topics: [ { name: "Bir Kahraman Doğuyor", term: 1, questions: [] }, { name: "Milli Uyanış", term: 1, questions: [] } ] },
-            ing: { title: "İNGİLİZCE KAMP", color: "var(--ing-color)", topics: [ { name: "Friendship", term: 1, questions: [] }, { name: "Teen Life", term: 1, questions: [] }, { name: "Adventures", term: 2, questions: [] } ] },
-            din: { title: "DİN KÜLTÜRÜ KAMP", color: "var(--din-color)", topics: [ { name: "Kader İnancı", term: 1, questions: [] }, { name: "Zekat ve Sadaka", term: 1, questions: [] }, { name: "Hz. Muhammed", term: 2, questions: [] } ] }
+            sos: {
+                title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)",
+                topics: [
+                    { name: "Bir Kahraman Doğuyor", term: 1, questions: [] },
+                    { name: "Milli Uyanış", term: 1, questions: [] },
+                    { name: "Ya İstiklal Ya Ölüm", term: 1, questions: [] },
+                    { name: "Atatürkçülük", term: 2, questions: [] },
+                    { name: "Demokratikleşme", term: 2, questions: [] },
+                    { name: "Dış Politika", term: 2, questions: [] },
+                    { name: "Atatürk'ün Ölümü", term: 2, questions: [] }
+                ]
+            },
+            ing: {
+                title: "İNGİLİZCE KAMP", color: "var(--ing-color)",
+                topics: [
+                    { name: "Friendship", term: 1, questions: [] },
+                    { name: "Teen Life", term: 1, questions: [] },
+                    { name: "In the Kitchen", term: 1, questions: [] },
+                    { name: "On the Phone", term: 1, questions: [] },
+                    { name: "The Internet", term: 1, questions: [] },
+                    { name: "Adventures", term: 2, questions: [] },
+                    { name: "Tourism", term: 2, questions: [] },
+                    { name: "Chores", term: 2, questions: [] },
+                    { name: "Science", term: 2, questions: [] },
+                    { name: "Natural Forces", term: 2, questions: [] }
+                ]
+            },
+            din: {
+                title: "DİN KÜLTÜRÜ KAMP", color: "var(--din-color)",
+                topics: [
+                    { name: "Kader İnancı", term: 1, questions: [] },
+                    { name: "Zekat ve Sadaka", term: 1, questions: [] },
+                    { name: "Din ve Hayat", term: 1, questions: [] },
+                    { name: "Hz. Muhammed'in Örnekliği", term: 2, questions: [] },
+                    { name: "Kur'an-ı Kerim", term: 2, questions: [] }
+                ]
+            }
         };
 
         let currentSubject = "", currentTopicObj = null;
@@ -282,7 +345,6 @@
         function startQuiz() {
             if(!currentTopicObj.questions) return;
             
-            // Soruları karıştır (Shuffle) ve en fazla 10 tane al
             let shuffled = [...currentTopicObj.questions].sort(() => 0.5 - Math.random());
             quizQuestions = shuffled.slice(0, 10);
             
@@ -314,7 +376,6 @@
         }
 
         function checkAnswer(clickedBtn, selected, correct) {
-            // Tüm butonları dondur
             const allBtns = document.querySelectorAll('.option-btn');
             allBtns.forEach(b => b.classList.add('disabled'));
 
@@ -323,7 +384,6 @@
                 correctCount++;
             } else {
                 clickedBtn.classList.add('wrong');
-                // Doğru olanı yeşil yap
                 allBtns.forEach(b => {
                     if(b.innerHTML.includes(`${correct.toUpperCase()})`)) b.classList.add('correct');
                 });
