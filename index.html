@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Şampiyonluk Maçı v19</title>
+    <title>Math Hero LGS - Tüm Dersler v20</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -36,7 +36,7 @@
         .subject-card:active { transform: scale(0.95); }
         .subject-icon { font-size: 32px; margin-bottom: 8px; }
         
-        /* DİNAMİK HARİTA STİLLERİ (KİLİTLER KALDIRILDI) */
+        /* DİNAMİK HARİTA STİLLERİ */
         .map-container { display: flex; flex-direction: column; align-items: center; gap: 50px; padding: 20px 0 80px 0; width: 100%; position: relative; margin-top: 5px; }
         .map-node { width: 70px; height: 70px; border-radius: 50%; background: var(--node-color, var(--streak-color)); display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 4px solid #fff; position: relative; z-index: 2; cursor: pointer; box-shadow: 0 0 20px var(--node-color, rgba(239, 159, 39, 0.6)); animation: floatNode 3s infinite ease-in-out; }
         .map-line { position: absolute; width: 6px; height: 50px; background: #444; z-index: 1; bottom: -50px; left: calc(50% - 3px); border-radius: 3px; }
@@ -53,8 +53,6 @@
         .quiz-scroll-area { flex: 1; width: 100%; max-width: 400px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
         
         .question-box { background: white; color: black; padding: 20px; border-radius: 12px; font-size: 15px; text-align: left; line-height: 1.5; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .question-box img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-        
         .option-btn { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-size: 15px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; gap: 10px; align-items: flex-start; }
         .option-btn:active { transform: scale(0.98); }
         .option-btn.correct { background: var(--correct-flash); border-color: #fff; }
@@ -71,10 +69,10 @@
     <!-- ANA EKRAN -->
     <div id="startScreen" class="screen active">
         <div class="title" style="margin-top: 20px;">LGS KAMP MERKEZİ</div>
-        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v19 Yeni Nesil Soru Simülatörü</div>
+        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v20 Tam Kadro LGS Sürümü</div>
         
         <div class="glass-panel" style="padding:15px; text-align:center; font-size:14px; margin-bottom: 20px;">
-            <b style="color:var(--timer-normal)">MEB Orijinal Soru Arşivi</b><br>
+            <b style="color:var(--timer-normal)">Tüm Dersler Aktif</b><br>
             <span style="color:#ccc">Ömer için kilitler kaldırıldı. İstediğin konudan maça başla!</span>
         </div>
 
@@ -99,6 +97,13 @@
             </div>
             <div class="subject-card" style="border-color: var(--sos-color);" onclick="openSubjectMap('sos')">
                 <div class="subject-icon">🌍</div><div class="subject-name" style="color: var(--sos-color);">İnkılap Tarihi</div>
+            </div>
+            <!-- EKLENEN İNGİLİZCE VE DİN KÜLTÜRÜ -->
+            <div class="subject-card" style="border-color: var(--ing-color);" onclick="openSubjectMap('ing')">
+                <div class="subject-icon">🗽</div><div class="subject-name" style="color: var(--ing-color);">İngilizce</div>
+            </div>
+            <div class="subject-card" style="border-color: var(--din-color);" onclick="openSubjectMap('din')">
+                <div class="subject-icon">🕋</div><div class="subject-name" style="color: var(--din-color);">Din Kültürü</div>
             </div>
         </div>
     </div>
@@ -148,7 +153,7 @@
                 title: "TÜRKÇE KAMP", color: "var(--turkce-color)",
                 topics: [
                     { 
-                        name: "Parçada Anlam (Yeni Nesil)", term: 1,
+                        name: "Parçada Anlam", term: 1,
                         theory: "LGS Türkçe paragraf sorularında MEB genellikle okuduğunu anlama, görsel okuma ve mantık yürütme becerisini ölçer. Soru kökünde 'Değinilmemiştir', 'Söylenemez' gibi olumsuz ifadelere çok dikkat et.",
                         questions: [
                             {
@@ -157,7 +162,7 @@
                                 b: "II. cümlede olumsuz bir eleştiri vardır.",
                                 c: "III. cümlede şarta bağlı bir durum söz konusudur.",
                                 d: "IV. cümlede örneklemeden faydalanılmıştır.",
-                                correct: "a"
+                                correct: "c"
                             },
                             {
                                 text: "27 yıl sürdürdüğü doğa koruma çalışmalarıyla, alternatif Nobel olarak bilinen Doğru Yaşam Onur Ödülü’nün sahibi olan ve Birleşmiş Milletler tarafından “Orman Kahramanı” seçilen Toprak Dede Hayrettin Karaca, Türkiye'nin ilk özel arboretumunun da kurucusuydu. O, ömrünü erozyonla mücadeleye adadı.<br><br><b>Bu metinden hareketle Hayrettin Karaca ile ilgili,<br>I. Gayretli<br>II. Doğasever<br>III. Başarılı<br>niteliklerinden hangilerine ulaşılabilir?</b>",
@@ -190,8 +195,10 @@
                     }
                 ]
             },
-            mat: { title: "MATEMATİK KAMP", color: "var(--mat-color)", topics: [ { name: "Çarpanlar ve Katlar", term: 1, questions: [] } ] },
-            sos: { title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)", topics: [ { name: "Bir Kahraman Doğuyor", term: 1, questions: [] } ] }
+            mat: { title: "MATEMATİK KAMP", color: "var(--mat-color)", topics: [ { name: "Çarpanlar ve Katlar", term: 1, questions: [] }, { name: "Üslü İfadeler", term: 1, questions: [] }, { name: "Doğrusal Denklemler", term: 2, questions: [] } ] },
+            sos: { title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)", topics: [ { name: "Bir Kahraman Doğuyor", term: 1, questions: [] }, { name: "Milli Uyanış", term: 1, questions: [] } ] },
+            ing: { title: "İNGİLİZCE KAMP", color: "var(--ing-color)", topics: [ { name: "Friendship", term: 1, questions: [] }, { name: "Teen Life", term: 1, questions: [] }, { name: "Adventures", term: 2, questions: [] } ] },
+            din: { title: "DİN KÜLTÜRÜ KAMP", color: "var(--din-color)", topics: [ { name: "Kader İnancı", term: 1, questions: [] }, { name: "Zekat ve Sadaka", term: 1, questions: [] }, { name: "Hz. Muhammed", term: 2, questions: [] } ] }
         };
 
         let currentSubject = "", currentTopicObj = null;
