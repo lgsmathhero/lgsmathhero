@@ -1,156 +1,31 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Çizgisiz Tasarım v22</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        :root {
-            --bg-color: #0D0D14; --text-color: #FFFFFF; --timer-normal: #5DCAA5;
-            --timer-critical: #E24B4A; --correct-flash: #1D9E75; --streak-color: #EF9F27; 
-            --tennis-color: #DFFF00; --mat-color: #EF9F27; --turkce-color: #E24B4A;
-            --fen-color: #5DCAA5; --sos-color: #3498DB; --ing-color: #9B59B6; --din-color: #F1C40F;
-        }
-        html, body { position: fixed; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; }
-        
-        .screen { display: none; flex-direction: column; width: 100%; height: 100dvh; padding: max(env(safe-area-inset-top), 40px) 15px max(env(safe-area-inset-bottom), 20px) 15px; text-align: center; position: relative; overflow-y: auto; overflow-x: hidden; }
-        .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
-        
-        #startScreen, #subjectScreen, #mapScreen, #theoryScreen { justify-content: flex-start; align-items: center; gap: 12px; }
-        #quizScreen { justify-content: flex-start; align-items: center; padding-top: max(env(safe-area-inset-top), 20px); }
-        
-        .title { font-size: clamp(24px, 8vw, 36px); font-weight: bold; color: var(--timer-normal); z-index: 10; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
-        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
-        
-        .btn-primary { background-color: var(--streak-color); color: #111; font-size: 18px; font-weight: bold; padding: 14px 20px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(239, 159, 39, 0.3); width: 100%; max-width: 400px; margin-top:15px; }
-        .btn-primary:active { transform: scale(0.95); }
-        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top:5px; width: 100%; max-width: 400px; cursor: pointer;}
-        
-        /* DERS SEÇİM EKRANI STİLLERİ */
-        .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 10px; }
-        .subject-card { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 16px; padding: 20px 10px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .subject-card:active { transform: scale(0.95); }
-        .subject-icon { font-size: 32px; margin-bottom: 8px; }
-        
-        /* DİNAMİK HARİTA STİLLERİ (ÇİZGİLER KALDIRILDI) */
-        .map-container { display: flex; flex-direction: column; align-items: center; gap: 55px; padding: 20px 0 80px 0; width: 100%; position: relative; margin-top: 5px; }
-        .map-node { width: 70px; height: 70px; border-radius: 50%; background: var(--node-color, var(--streak-color)); display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 4px solid #fff; position: relative; z-index: 2; cursor: pointer; box-shadow: 0 0 20px var(--node-color, rgba(239, 159, 39, 0.6)); animation: floatNode 3s infinite ease-in-out; }
-        .node-title { position: absolute; bottom: -32px; font-size: 13px; white-space: nowrap; color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000, 0 0 10px var(--bg-color); width: 200px; text-align: center; left: 50%; transform: translateX(-50%); z-index: 5; }
-        .term-badge { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; color: white; font-size: 14px; letter-spacing: 2px; margin: 10px 0; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-
-        /* SOYUNMA ODASI STİLLERİ */
-        .theory-scroll-container { width: 100%; max-width: 400px; flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; }
-        .theory-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); border-left: 6px solid var(--node-color, var(--tennis-color)); text-align: left; font-size: 15px; margin-bottom: 15px; }
-        .theory-header { color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        
-        /* ŞAMPİYONLUK MAÇI (SORU ÇÖZÜM) STİLLERİ */
-        .quiz-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 400px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .quiz-scroll-area { flex: 1; width: 100%; max-width: 400px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
-        
-        .question-box { background: white; color: black; padding: 20px; border-radius: 12px; font-size: 15px; text-align: left; line-height: 1.5; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .option-btn { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-size: 15px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; gap: 10px; align-items: flex-start; }
-        .option-btn:active { transform: scale(0.98); }
-        .option-btn.correct { background: var(--correct-flash); border-color: #fff; }
-        .option-btn.wrong { background: var(--timer-critical); border-color: #fff; }
-        .option-btn.disabled { pointer-events: none; opacity: 0.8; }
-        .opt-letter { font-weight: bold; color: var(--tennis-color); min-width: 25px; }
-
-        @keyframes floatNode { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body>
-
-    <!-- ANA EKRAN -->
-    <div id="startScreen" class="screen active">
-        <div class="title" style="margin-top: 20px;">LGS KAMP MERKEZİ</div>
-        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v22 Çizgisiz Ferah Tasarım</div>
-        
-        <div class="glass-panel" style="padding:15px; text-align:center; font-size:14px; margin-bottom: 20px;">
-            <b style="color:var(--timer-normal)">Tüm Dersler ve Konular Aktif</b><br>
-            <span style="color:#ccc">Ömer için kilitler kaldırıldı. İstediğin konudan maça başla!</span>
-        </div>
-
-        <button class="btn-primary" onclick="switchScreen('subjectScreen')">📚 LGS Kampına Gir</button>
-    </div>
-
-    <!-- DERS SEÇİM EKRANI -->
-    <div id="subjectScreen" class="screen">
-        <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center;">
-            <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('startScreen')">🔙 Geri</button>
-            <div style="color:white; font-weight:bold; font-size:18px;">DERSİNİ SEÇ</div>
-        </div>
-        <div class="subject-grid">
-            <div class="subject-card" style="border-color: var(--mat-color);" onclick="openSubjectMap('mat')">
-                <div class="subject-icon">📐</div><div class="subject-name" style="color: var(--mat-color);">Matematik</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--turkce-color);" onclick="openSubjectMap('turkce')">
-                <div class="subject-icon">📖</div><div class="subject-name" style="color: var(--turkce-color);">Türkçe</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--fen-color);" onclick="openSubjectMap('fen')">
-                <div class="subject-icon">🔬</div><div class="subject-name" style="color: var(--fen-color);">Fen Bilimleri</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--sos-color);" onclick="openSubjectMap('sos')">
-                <div class="subject-icon">🌍</div><div class="subject-name" style="color: var(--sos-color);">İnkılap Tarihi</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--ing-color);" onclick="openSubjectMap('ing')">
-                <div class="subject-icon">🗽</div><div class="subject-name" style="color: var(--ing-color);">İngilizce</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--din-color);" onclick="openSubjectMap('din')">
-                <div class="subject-icon">🕋</div><div class="subject-name" style="color: var(--din-color);">Din Kültürü</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DİNAMİK HARİTA EKRANI -->
-    <div id="mapScreen" class="screen">
-        <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center;">
-            <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('subjectScreen')">🔙 Dersler</button>
-            <div id="mapTitle" style="color:white; font-weight:bold; font-size:18px;">HARİTA</div>
-        </div>
-        <div class="map-container" id="dynamicMapContainer"></div>
-    </div>
-
-    <!-- KONU ANLATIMI EKRANI -->
-    <div id="theoryScreen" class="screen" style="padding-bottom: 10px;">
-        <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center; margin-bottom: 15px;">
-            <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('mapScreen')">🔙 Harita</button>
-            <div style="color:white; font-weight:bold; font-size:16px;">SOYUNMA ODASI</div>
-        </div>
-        <div class="theory-scroll-container">
-            <div class="theory-card" id="theoryCard">
-                <div class="theory-header" id="theoryTopicName">Konu Adı</div>
-                <div id="theoryContentArea"></div>
-            </div>
-        </div>
-        <button id="btnStartQuiz" class="btn-primary" style="background-color: var(--timer-normal); margin-top: 5px;" onclick="startQuiz()">🔥 Şampiyonluk Maçına Çık</button>
-    </div>
-
-    <!-- ŞAMPİYONLUK MAÇI (SORU ÇÖZÜM) EKRANI -->
-    <div id="quizScreen" class="screen">
-        <div class="quiz-header">
-            <div id="quizProgress" style="color:var(--tennis-color); font-weight:bold;">Soru: 1 / 10</div>
-            <button class="btn-secondary" style="width:auto; padding:5px 10px; margin:0; font-size:12px;" onclick="cancelQuiz()">Maçı Bitir</button>
-        </div>
-        
-        <div class="quiz-scroll-area">
-            <div class="question-box" id="qText">Soru Yükleniyor...</div>
-            <div id="optionsArea" style="display:flex; flex-direction:column; gap:10px;"></div>
-            <button id="btnNextQuestion" class="btn-primary" style="display:none; margin: 10px auto;" onclick="nextQuestion()">Sonraki Soru ➔</button>
-        </div>
-    </div>
-
-    <script>
-        // --- MEB LGS SORU BANKASI VE TÜM KONULAR (V22) ---
+<script>
+        // --- MEB LGS SORU BANKASI VE TÜM KONULAR (V23 - Soru Yüklü Sürüm) ---
         const lgsData = {
             mat: {
                 title: "MATEMATİK KAMP", color: "var(--mat-color)",
                 topics: [
-                    { name: "Çarpanlar ve Katlar", term: 1, questions: [] },
+                    { 
+                        name: "Çarpanlar ve Katlar", term: 1, 
+                        theory: "<b>🎯 LGS Taktikleri (Şifreler):</b><br><br>• Soruda büyük parçalar küçük eş parçalara ayrılıyorsa (çuvalı poşetlere bölme, tarlayı parsellere ayırma, çubuk kesme) <b>EBOB</b> kullanılır.<br><br>• Soruda küçük parçalardan büyük bir bütün elde ediliyorsa (fayans dizme, cevizleri sayma, nöbet tutma, zillerin beraber çalması) <b>EKOK</b> kullanılır.<br><br>• Aralarında asal iki sayının (örn: 8 ve 9) EBOB'u daima 1, EKOK'u ise bu sayıların çarpımıdır.",
+                        questions: [
+                            {
+                                text: "Kenar uzunlukları 18 m ve 24 m olan dikdörtgen şeklindeki bir bahçenin etrafına, köşelere de gelmek şartıyla eşit aralıklarla ağaç dikilecektir.<br><br><b>Buna göre bu iş için en az kaç ağaç gereklidir?</b><br><br><i>(Koçun İpucu: Bahçeyi eşit parçalara (aralıklara) böleceksin. Parçalama işlemi varsa sence EBOB mu, EKOK mu?)</i>",
+                                a: "14",
+                                b: "12",
+                                c: "10",
+                                d: "7",
+                                correct: "a"
+                            },
+                            {
+                                text: "Bir hastanedeki iki hemşireden biri 6 günde bir, diğeri 8 günde bir nöbet tutmaktadır.<br><br><b>İkisi birlikte aynı gün nöbet tuttuktan en az kaç gün sonra tekrar birlikte nöbet tutarlar?</b><br><br><i>(Koçun İpucu: Günler ileriye doğru katlanarak artacak ve ortak bir günde buluşacaklar. Katlanarak büyüme varsa ne yapmalısın?)</i>",
+                                a: "12",
+                                b: "18",
+                                c: "24",
+                                d: "48",
+                                correct: "c"
+                            }
+                        ]
+                    },
                     { name: "Üslü İfadeler", term: 1, questions: [] },
                     { name: "Kareköklü İfadeler", term: 1, questions: [] },
                     { name: "Veri Analizi", term: 1, questions: [] },
@@ -170,7 +45,7 @@
                     { name: "Sözcükte Anlam", term: 1, questions: [] },
                     { name: "Cümlede Anlam", term: 1, questions: [] },
                     { 
-                        name: "Parçada Anlam (Mantık)", term: 1,
+                        name: "Parçada Anlam", term: 1,
                         theory: "LGS Türkçe paragraf sorularında MEB genellikle okuduğunu anlama, görsel okuma ve mantık yürütme becerisini ölçer. Soru kökünde 'Değinilmemiştir', 'Söylenemez' gibi olumsuz ifadelere çok dikkat et.",
                         questions: [
                             {
@@ -400,5 +275,3 @@
             }
         }
     </script>
-</body>
-</html>
