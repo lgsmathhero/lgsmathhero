@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Math Hero LGS - Dönemli Sistem v17</title>
+    <title>Math Hero LGS - Şampiyonluk Maçı v19</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -21,34 +21,46 @@
         .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
         
         #startScreen, #subjectScreen, #mapScreen, #theoryScreen { justify-content: flex-start; align-items: center; gap: 12px; }
+        #quizScreen { justify-content: flex-start; align-items: center; padding-top: max(env(safe-area-inset-top), 20px); }
         
         .title { font-size: clamp(24px, 8vw, 36px); font-weight: bold; color: var(--timer-normal); z-index: 10; text-shadow: 0 0 15px rgba(93, 202, 165, 0.4);}
         .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
         
-        .btn-primary { background-color: var(--streak-color); color: #111; font-size: 18px; font-weight: bold; padding: 14px 20px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(239, 159, 39, 0.3); width: 80%; max-width: 300px; margin-top:15px; }
+        .btn-primary { background-color: var(--streak-color); color: #111; font-size: 18px; font-weight: bold; padding: 14px 20px; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(239, 159, 39, 0.3); width: 100%; max-width: 400px; margin-top:15px; }
         .btn-primary:active { transform: scale(0.95); }
-        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top:5px; width: 80%; max-width: 300px; cursor: pointer;}
+        .btn-secondary { background-color: rgba(255,255,255,0.1); color: white; font-size: 14px; font-weight: bold; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top:5px; width: 100%; max-width: 400px; cursor: pointer;}
         
         /* DERS SEÇİM EKRANI STİLLERİ */
         .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 10px; }
         .subject-card { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 16px; padding: 20px 10px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .subject-card:active { transform: scale(0.95); }
         .subject-icon { font-size: 32px; margin-bottom: 8px; }
-        .subject-name { font-size: 14px; font-weight: bold; }
         
-        /* DİNAMİK HARİTA STİLLERİ */
+        /* DİNAMİK HARİTA STİLLERİ (KİLİTLER KALDIRILDI) */
         .map-container { display: flex; flex-direction: column; align-items: center; gap: 50px; padding: 20px 0 80px 0; width: 100%; position: relative; margin-top: 5px; }
-        .map-node { width: 70px; height: 70px; border-radius: 50%; background: #222; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 4px solid #444; position: relative; z-index: 2; transition: transform 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
-        .map-node.unlocked { background: var(--node-color, var(--streak-color)); border-color: #fff; cursor: pointer; box-shadow: 0 0 20px var(--node-color, rgba(239, 159, 39, 0.6)); animation: floatNode 3s infinite ease-in-out; }
-        .map-node.locked { opacity: 0.6; filter: grayscale(100%); }
+        .map-node { width: 70px; height: 70px; border-radius: 50%; background: var(--node-color, var(--streak-color)); display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 4px solid #fff; position: relative; z-index: 2; cursor: pointer; box-shadow: 0 0 20px var(--node-color, rgba(239, 159, 39, 0.6)); animation: floatNode 3s infinite ease-in-out; }
         .map-line { position: absolute; width: 6px; height: 50px; background: #444; z-index: 1; bottom: -50px; left: calc(50% - 3px); border-radius: 3px; }
-        .node-title { position: absolute; bottom: -32px; font-size: 13px; white-space: nowrap; color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000; width: 150px; text-align: center; left: 50%; transform: translateX(-50%);}
-        
+        .node-title { position: absolute; bottom: -32px; font-size: 13px; white-space: nowrap; color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000, 0 0 10px var(--bg-color); width: 150px; text-align: center; left: 50%; transform: translateX(-50%); z-index: 5; }
         .term-badge { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; color: white; font-size: 14px; letter-spacing: 2px; margin: 10px 0; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
         /* SOYUNMA ODASI STİLLERİ */
-        .theory-card { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 16px; border-left: 5px solid var(--node-color, var(--tennis-color)); text-align: left; line-height: 1.5; font-size: 15px; margin-bottom: 20px; width: 90%; max-width: 400px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-        .theory-header { color: var(--node-color, var(--tennis-color)); font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .theory-scroll-container { width: 100%; max-width: 400px; flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; }
+        .theory-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); border-left: 6px solid var(--node-color, var(--tennis-color)); text-align: left; font-size: 15px; margin-bottom: 15px; }
+        .theory-header { color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        
+        /* ŞAMPİYONLUK MAÇI (SORU ÇÖZÜM) STİLLERİ */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 400px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .quiz-scroll-area { flex: 1; width: 100%; max-width: 400px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
+        
+        .question-box { background: white; color: black; padding: 20px; border-radius: 12px; font-size: 15px; text-align: left; line-height: 1.5; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .question-box img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+        
+        .option-btn { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-size: 15px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; gap: 10px; align-items: flex-start; }
+        .option-btn:active { transform: scale(0.98); }
+        .option-btn.correct { background: var(--correct-flash); border-color: #fff; }
+        .option-btn.wrong { background: var(--timer-critical); border-color: #fff; }
+        .option-btn.disabled { pointer-events: none; opacity: 0.8; }
+        .opt-letter { font-weight: bold; color: var(--tennis-color); min-width: 25px; }
 
         @keyframes floatNode { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -59,15 +71,14 @@
     <!-- ANA EKRAN -->
     <div id="startScreen" class="screen active">
         <div class="title" style="margin-top: 20px;">LGS KAMP MERKEZİ</div>
-        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v17 Dönemli Eğitim Sürümü</div>
+        <div style="color:var(--tennis-color); font-size:14px; font-weight:bold; margin-bottom:20px;">v19 Yeni Nesil Soru Simülatörü</div>
         
         <div class="glass-panel" style="padding:15px; text-align:center; font-size:14px; margin-bottom: 20px;">
-            <b style="color:var(--timer-normal)">Hedef: 2027 LGS</b><br>
-            <span style="color:#ccc">Yeni nesil soru simülatörüne girmek için kampı başlat.</span>
+            <b style="color:var(--timer-normal)">MEB Orijinal Soru Arşivi</b><br>
+            <span style="color:#ccc">Ömer için kilitler kaldırıldı. İstediğin konudan maça başla!</span>
         </div>
 
         <button class="btn-primary" onclick="switchScreen('subjectScreen')">📚 LGS Kampına Gir</button>
-        <button class="btn-secondary" onclick="alert('Eski serbest mod şu an devre dışı.')">⚡ Serbest Antrenman (Eski Mod)</button>
     </div>
 
     <!-- DERS SEÇİM EKRANI -->
@@ -76,124 +87,115 @@
             <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('startScreen')">🔙 Geri</button>
             <div style="color:white; font-weight:bold; font-size:18px;">DERSİNİ SEÇ</div>
         </div>
-        
         <div class="subject-grid">
             <div class="subject-card" style="border-color: var(--mat-color);" onclick="openSubjectMap('mat')">
-                <div class="subject-icon">📐</div>
-                <div class="subject-name" style="color: var(--mat-color);">Matematik</div>
+                <div class="subject-icon">📐</div><div class="subject-name" style="color: var(--mat-color);">Matematik</div>
             </div>
             <div class="subject-card" style="border-color: var(--turkce-color);" onclick="openSubjectMap('turkce')">
-                <div class="subject-icon">📖</div>
-                <div class="subject-name" style="color: var(--turkce-color);">Türkçe</div>
+                <div class="subject-icon">📖</div><div class="subject-name" style="color: var(--turkce-color);">Türkçe</div>
             </div>
             <div class="subject-card" style="border-color: var(--fen-color);" onclick="openSubjectMap('fen')">
-                <div class="subject-icon">🔬</div>
-                <div class="subject-name" style="color: var(--fen-color);">Fen Bilimleri</div>
+                <div class="subject-icon">🔬</div><div class="subject-name" style="color: var(--fen-color);">Fen Bilimleri</div>
             </div>
             <div class="subject-card" style="border-color: var(--sos-color);" onclick="openSubjectMap('sos')">
-                <div class="subject-icon">🌍</div>
-                <div class="subject-name" style="color: var(--sos-color);">İnkılap Tarihi</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--ing-color);" onclick="openSubjectMap('ing')">
-                <div class="subject-icon">🗽</div>
-                <div class="subject-name" style="color: var(--ing-color);">İngilizce</div>
-            </div>
-            <div class="subject-card" style="border-color: var(--din-color);" onclick="openSubjectMap('din')">
-                <div class="subject-icon">🕋</div>
-                <div class="subject-name" style="color: var(--din-color);">Din Kültürü</div>
+                <div class="subject-icon">🌍</div><div class="subject-name" style="color: var(--sos-color);">İnkılap Tarihi</div>
             </div>
         </div>
     </div>
 
-    <!-- DİNAMİK HARİTA (MAP) EKRANI -->
+    <!-- DİNAMİK HARİTA EKRANI -->
     <div id="mapScreen" class="screen">
         <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center;">
             <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('subjectScreen')">🔙 Dersler</button>
             <div id="mapTitle" style="color:white; font-weight:bold; font-size:18px;">HARİTA</div>
         </div>
-        
-        <div class="map-container" id="dynamicMapContainer">
-            <!-- JavaScript burayı dersin konularına ve dönemine göre otomatik dolduracak -->
-        </div>
+        <div class="map-container" id="dynamicMapContainer"></div>
     </div>
 
-    <!-- SOYUNMA ODASI (TEORİ) EKRANI -->
-    <div id="theoryScreen" class="screen">
-        <div class="title" style="font-size:24px; color:white;" id="theoryTitle">SOYUNMA ODASI</div>
-        
-        <div class="theory-card" id="theoryCard">
-            <div class="theory-header" id="theoryTopicName">Konu Adı</div>
-            <p id="theoryContent">Buraya senin göndereceğin MEB sorularının ipuçları ve taktikleri gelecek.</p>
-            <p style="color:#aaa; font-size:13px; margin-top:15px;"><i>Görev: İlerleyen güncellemelerde burada "MEB Sorusu Ezberleme" ve "Şampiyonluk Maçı" açılacak!</i></p>
+    <!-- KONU ANLATIMI EKRANI -->
+    <div id="theoryScreen" class="screen" style="padding-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; width:100%; max-width:400px; align-items:center; margin-bottom: 15px;">
+            <button class="btn-secondary" style="width:auto; padding:8px 15px; margin:0;" onclick="switchScreen('mapScreen')">🔙 Harita</button>
+            <div style="color:white; font-weight:bold; font-size:16px;">SOYUNMA ODASI</div>
+        </div>
+        <div class="theory-scroll-container">
+            <div class="theory-card" id="theoryCard">
+                <div class="theory-header" id="theoryTopicName">Konu Adı</div>
+                <div id="theoryContentArea"></div>
+            </div>
+        </div>
+        <button id="btnStartQuiz" class="btn-primary" style="background-color: var(--timer-normal); margin-top: 5px;" onclick="startQuiz()">🔥 Şampiyonluk Maçına Çık</button>
+    </div>
+
+    <!-- ŞAMPİYONLUK MAÇI (SORU ÇÖZÜM) EKRANI -->
+    <div id="quizScreen" class="screen">
+        <div class="quiz-header">
+            <div id="quizProgress" style="color:var(--tennis-color); font-weight:bold;">Soru: 1 / 10</div>
+            <button class="btn-secondary" style="width:auto; padding:5px 10px; margin:0; font-size:12px;" onclick="cancelQuiz()">Maçı Bitir</button>
         </div>
         
-        <button class="btn-primary" style="background-color: #444; color: #888;" disabled>Maça Çık (Yapım Aşamasında)</button>
-        <button class="btn-secondary" onclick="switchScreen('mapScreen')">Haritaya Dön</button>
+        <div class="quiz-scroll-area">
+            <div class="question-box" id="qText">Soru Yükleniyor...</div>
+            <div id="optionsArea" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <button id="btnNextQuestion" class="btn-primary" style="display:none; margin: 10px auto;" onclick="nextQuestion()">Sonraki Soru ➔</button>
+        </div>
     </div>
 
     <script>
-        // --- TÜM DERSLERİN LGS KONU VERİTABANI (DÖNEMLERE GÖRE AYRILMIŞ) ---
+        // --- MEB LGS SORU BANKASI VE KONU VERİTABANI ---
         const lgsData = {
-            mat: {
-                title: "MATEMATİK KAMP", color: "var(--mat-color)",
-                topics: [
-                    { name: "Çarpanlar ve Katlar", term: 1 }, { name: "Üslü İfadeler", term: 1 },
-                    { name: "Kareköklü İfadeler", term: 1 }, { name: "Veri Analizi", term: 1 },
-                    { name: "Olasılık", term: 1 }, { name: "Cebirsel İfadeler", term: 1 },
-                    { name: "Doğrusal Denklemler", term: 2 }, { name: "Eşitsizlikler", term: 2 },
-                    { name: "Üçgenler", term: 2 }, { name: "Eşlik ve Benzerlik", term: 2 },
-                    { name: "Dönüşüm Geometrisi", term: 2 }, { name: "Geometrik Cisimler", term: 2 }
-                ]
-            },
             turkce: {
                 title: "TÜRKÇE KAMP", color: "var(--turkce-color)",
                 topics: [
-                    { name: "Sözcükte Anlam", term: 1 }, { name: "Cümlede Anlam", term: 1 },
-                    { name: "Parçada Anlam (Mantık)", term: 1 }, { name: "Fiilimsiler", term: 1 },
-                    { name: "Cümlenin Ögeleri", term: 1 }, { name: "Yazım ve Noktalama", term: 1 },
-                    { name: "Fiilde Çatı", term: 2 }, { name: "Cümle Türleri", term: 2 },
-                    { name: "Anlatım Bozuklukları", term: 2 }, { name: "Parçada Anlam (Devam)", term: 2 }
+                    { 
+                        name: "Parçada Anlam (Yeni Nesil)", term: 1,
+                        theory: "LGS Türkçe paragraf sorularında MEB genellikle okuduğunu anlama, görsel okuma ve mantık yürütme becerisini ölçer. Soru kökünde 'Değinilmemiştir', 'Söylenemez' gibi olumsuz ifadelere çok dikkat et.",
+                        questions: [
+                            {
+                                text: "<b>(I)</b> Gelişim, insanın en temel ihtiyaçlarından biridir. <b>(II)</b> Ancak günümüzde bilgeliğin yerini bilgi, oyunun yerini yarışma aldığı gibi maalesef gelişimin yerini de başarı almış durumda. <b>(III)</b> Hâlbuki her gelişim bir başarıyken her başarı bir gelişim değildir. <b>(IV)</b> Kişi, ehliyet sınavından iyi bir puan alabilir ama bu, onun öğrendiği ve geliştiği anlamına gelmeyebilir.<br><br><b>Bu parçada numaralanmış cümlelerle ilgili aşağıdakilerden hangisi söylenemez?</b>",
+                                a: "I. cümlede karşılaştırma yapılmıştır.",
+                                b: "II. cümlede olumsuz bir eleştiri vardır.",
+                                c: "III. cümlede şarta bağlı bir durum söz konusudur.",
+                                d: "IV. cümlede örneklemeden faydalanılmıştır.",
+                                correct: "a"
+                            },
+                            {
+                                text: "27 yıl sürdürdüğü doğa koruma çalışmalarıyla, alternatif Nobel olarak bilinen Doğru Yaşam Onur Ödülü’nün sahibi olan ve Birleşmiş Milletler tarafından “Orman Kahramanı” seçilen Toprak Dede Hayrettin Karaca, Türkiye'nin ilk özel arboretumunun da kurucusuydu. O, ömrünü erozyonla mücadeleye adadı.<br><br><b>Bu metinden hareketle Hayrettin Karaca ile ilgili,<br>I. Gayretli<br>II. Doğasever<br>III. Başarılı<br>niteliklerinden hangilerine ulaşılabilir?</b>",
+                                a: "I ve II.",
+                                b: "I ve III.",
+                                c: "II ve III.",
+                                d: "I, II ve III.",
+                                correct: "d"
+                            }
+                        ]
+                    }
                 ]
             },
             fen: {
                 title: "FEN BİLİMLERİ KAMP", color: "var(--fen-color)",
                 topics: [
-                    { name: "Mevsimler ve İklim", term: 1 }, { name: "DNA ve Genetik Kod", term: 1 },
-                    { name: "Basınç", term: 1 }, { name: "Madde ve Endüstri", term: 1 },
-                    { name: "Basit Makineler", term: 2 }, { name: "Enerji Dönüşümleri", term: 2 },
-                    { name: "Elektrik Yükleri", term: 2 }
+                    {
+                        name: "Mevsimler, İklim ve Canlılar", term: 1,
+                        theory: "MEB Fen Bilimlerinde uzun deney metinleri ve çıkarım soruları sorar. Tablo ve grafikleri okumak metni okumak kadar önemlidir.",
+                        questions: [
+                            {
+                                text: "Eski çağlarda yaşamış, kertenkeleye benzeyen büyük sürüngenlere verilen addır. İnsanlar onları filmlerde görebilir ama öyle dinozorlar vardı ki fillerden de büyüktü. Bazı otobur dinozor türleri 30 metre uzunlukta ve yaklaşık 80 ton ağırlıkta olabiliyordu. Bu özellikleriyle dinozorlar, yürüyen apartmanlar gibiydi.<br><br><b>Bu metinde aşağıdakilerden hangisine değinilmemiştir?</b>",
+                                a: "Dinozorların fillerden daha büyük olduğuna",
+                                b: "Bulunan kemiklere bakılarak tahmin edildiğine",
+                                c: "Dinozor kalıntısının ABD'de bulunduğuna",
+                                d: "Kertenkeleye benzeyen büyük sürüngenlere verilen adın ne olduğuna",
+                                correct: "c"
+                            }
+                        ]
+                    }
                 ]
             },
-            sos: {
-                title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)",
-                topics: [
-                    { name: "Bir Kahraman Doğuyor", term: 1 }, { name: "Milli Uyanış", term: 1 },
-                    { name: "Ya İstiklal Ya Ölüm", term: 1 },
-                    { name: "Atatürkçülük", term: 2 }, { name: "Demokratikleşme", term: 2 },
-                    { name: "Dış Politika", term: 2 }, { name: "Atatürk'ün Ölümü", term: 2 }
-                ]
-            },
-            ing: {
-                title: "İNGİLİZCE KAMP", color: "var(--ing-color)",
-                topics: [
-                    { name: "Friendship", term: 1 }, { name: "Teen Life", term: 1 },
-                    { name: "In the Kitchen", term: 1 }, { name: "On the Phone", term: 1 },
-                    { name: "The Internet", term: 1 },
-                    { name: "Adventures", term: 2 }, { name: "Tourism", term: 2 },
-                    { name: "Chores", term: 2 }, { name: "Science", term: 2 }, { name: "Natural Forces", term: 2 }
-                ]
-            },
-            din: {
-                title: "DİN KÜLTÜRÜ KAMP", color: "var(--din-color)",
-                topics: [
-                    { name: "Kader İnancı", term: 1 }, { name: "Zekat ve Sadaka", term: 1 },
-                    { name: "Din ve Hayat", term: 1 },
-                    { name: "Hz. Muhammed'in Örnekliği", term: 2 }, { name: "Kur'an-ı Kerim", term: 2 }
-                ]
-            }
+            mat: { title: "MATEMATİK KAMP", color: "var(--mat-color)", topics: [ { name: "Çarpanlar ve Katlar", term: 1, questions: [] } ] },
+            sos: { title: "İNKILAP TARİHİ KAMP", color: "var(--sos-color)", topics: [ { name: "Bir Kahraman Doğuyor", term: 1, questions: [] } ] }
         };
 
-        let currentSubject = "";
+        let currentSubject = "", currentTopicObj = null;
+        let quizQuestions = [], currentQIndex = 0, correctCount = 0;
 
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -203,18 +205,14 @@
         function openSubjectMap(subjectKey) {
             currentSubject = subjectKey;
             const data = lgsData[subjectKey];
-            
             document.getElementById('mapTitle').innerText = data.title;
             document.getElementById('mapTitle').style.color = data.color;
             
             const container = document.getElementById('dynamicMapContainer');
-            container.innerHTML = ""; // Temizle
+            container.innerHTML = "";
 
             let currentTerm = 0;
-
             data.topics.forEach((topicObj, index) => {
-                
-                // Dönem değiştiğinde araya bir ayırıcı (Badge) ekle
                 if (topicObj.term !== currentTerm) {
                     currentTerm = topicObj.term;
                     const termBadge = document.createElement('div');
@@ -224,13 +222,10 @@
                     container.appendChild(termBadge);
                 }
 
-                const isUnlocked = index === 0; // Şimdilik her dersin sadece 1. konusu açık
-                
                 const node = document.createElement('div');
-                node.className = `map-node ${isUnlocked ? 'unlocked' : 'locked'}`;
+                node.className = 'map-node';
                 node.style.setProperty('--node-color', data.color);
-                
-                node.innerHTML = isUnlocked ? (index + 1) : "🔒";
+                node.innerHTML = (index + 1);
                 
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'node-title';
@@ -243,23 +238,106 @@
                     node.appendChild(line);
                 }
 
-                if (isUnlocked) {
-                    node.onclick = () => openTheory(topicObj.name, data.color);
-                } else {
-                    node.onclick = () => alert("Önceki modülleri tamamlamalısın!");
-                }
-
+                node.onclick = () => openTheory(topicObj, data.color);
                 container.appendChild(node);
             });
-
             switchScreen('mapScreen');
         }
 
-        function openTheory(topicName, color) {
-            document.getElementById('theoryTopicName').innerText = topicName;
+        function openTheory(topicObj, color) {
+            currentTopicObj = topicObj;
+            document.getElementById('theoryTopicName').innerText = topicObj.name;
             document.getElementById('theoryCard').style.borderLeftColor = color;
-            document.getElementById('theoryTopicName').style.color = color;
+            document.documentElement.style.setProperty('--node-color', color);
+            
+            const contentArea = document.getElementById('theoryContentArea');
+            if (topicObj.theory) {
+                contentArea.innerHTML = `<div style="line-height:1.5; color:#E8E8E8;">${topicObj.theory}</div>`;
+            } else {
+                contentArea.innerHTML = `<p style="color:#aaa;">Bu konunun notları eklenecek...</p>`;
+            }
+            
+            const btnQuiz = document.getElementById('btnStartQuiz');
+            if (topicObj.questions && topicObj.questions.length > 0) {
+                btnQuiz.innerText = `🔥 Şampiyonluk Maçına Çık (${topicObj.questions.length} Soru)`;
+                btnQuiz.style.opacity = "1";
+                btnQuiz.disabled = false;
+            } else {
+                btnQuiz.innerText = "Maç Yakında Yüklenecek";
+                btnQuiz.style.opacity = "0.5";
+                btnQuiz.disabled = true;
+            }
+
             switchScreen('theoryScreen');
+        }
+
+        // --- ŞAMPİYONLUK MAÇI (KUIZ) MOTORU ---
+        function startQuiz() {
+            if(!currentTopicObj.questions) return;
+            
+            // Soruları karıştır (Shuffle) ve en fazla 10 tane al
+            let shuffled = [...currentTopicObj.questions].sort(() => 0.5 - Math.random());
+            quizQuestions = shuffled.slice(0, 10);
+            
+            currentQIndex = 0;
+            correctCount = 0;
+            switchScreen('quizScreen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            document.getElementById('btnNextQuestion').style.display = "none";
+            document.getElementById('quizProgress').innerText = `Soru: ${currentQIndex + 1} / ${quizQuestions.length}`;
+            
+            const q = quizQuestions[currentQIndex];
+            document.getElementById('qText').innerHTML = q.text;
+            
+            const optsArea = document.getElementById('optionsArea');
+            optsArea.innerHTML = "";
+            
+            ['a', 'b', 'c', 'd'].forEach(opt => {
+                if(q[opt]) {
+                    const btn = document.createElement('div');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `<span class="opt-letter">${opt.toUpperCase()})</span> <span>${q[opt]}</span>`;
+                    btn.onclick = () => checkAnswer(btn, opt, q.correct);
+                    optsArea.appendChild(btn);
+                }
+            });
+        }
+
+        function checkAnswer(clickedBtn, selected, correct) {
+            // Tüm butonları dondur
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.classList.add('disabled'));
+
+            if (selected === correct) {
+                clickedBtn.classList.add('correct');
+                correctCount++;
+            } else {
+                clickedBtn.classList.add('wrong');
+                // Doğru olanı yeşil yap
+                allBtns.forEach(b => {
+                    if(b.innerHTML.includes(`${correct.toUpperCase()})`)) b.classList.add('correct');
+                });
+            }
+            document.getElementById('btnNextQuestion').style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < quizQuestions.length) {
+                loadQuestion();
+            } else {
+                alert(`Maç Bitti! 🏆\nToplam Soru: ${quizQuestions.length}\nDoğru Sayısı: ${correctCount}`);
+                switchScreen('mapScreen');
+            }
+        }
+
+        function cancelQuiz() {
+            if(confirm("Maçtan çekilmek istediğine emin misin?")) {
+                switchScreen('mapScreen');
+            }
         }
     </script>
 </body>
